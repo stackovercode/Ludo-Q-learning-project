@@ -13,11 +13,11 @@ def moving_average(list,N):
 
 file_name = 'Test1'
 
-parameters_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test1_2_parameters.npy', allow_pickle=True)
-win_rate_vec_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test1_2_data.npy')
+parameters_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test1_2_parameters.npy', allow_pickle=True)
+win_rate_vec_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test1_2_data.npy')
 
-parameters_2 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test2_2_parameters.npy', allow_pickle=True)
-win_rate_vec_2 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test2_2_data.npy')
+parameters_2 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test2_2_parameters.npy', allow_pickle=True)
+win_rate_vec_2 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test2_2_data.npy')
 
 explore_rate_vec_1 = parameters_1[0]
 explore_rate_vec_2 = parameters_2[0]
@@ -60,7 +60,7 @@ axs.set_xlabel('Number of games')
 axs.set_ylabel('Win rate [%]')
 axs.plot(range(1,len(best_data)+1), [element * 100 for element in best_data])
 axs.plot(range(1,len(temp_data)+1), [element * 100 for element in temp_data],linewidth =4)
-plt.savefig('/home/reventlov/TAI/Project/github/ludo_game_AI2-main/Images_report/Best_winrate3.png',bbox_inches='tight')
+plt.savefig('/home/reventlov/TAI/Project/Ludo Q-learning project/src/images/Best_winrate.png',bbox_inches='tight')
 
 for i in range(2):
 	if i == 1:
@@ -90,7 +90,7 @@ for i in range(2):
 		axs.set_ylabel('Win rate [%]', fontsize=16)
 
 		plt.xticks(range(1,len(label_data)+1), label_data, rotation=45, fontsize=12)
-		plt.savefig('/home/reventlov/TAI/Project/ludo_game_AI2-main/Images_report/training_ER_'+str(ER_value) + '.png',
+		plt.savefig('/home/reventlov/TAI/Project/Ludo Q-learning project/src/images/training_ER_'+str(ER_value) + '.png',
 					bbox_inches='tight')
 
 for i in range(1,2):

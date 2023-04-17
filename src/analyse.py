@@ -14,8 +14,8 @@ def moving_average(list,N):
 file_name = 'Test1'
 
 
-parameters_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test_run_parameters.npy',allow_pickle=True)
-win_rate_vec = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/Test_run_data.npy')
+parameters_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test_run_parameters.npy',allow_pickle=True)
+win_rate_vec = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test_run_data.npy')
 
 
 
@@ -48,7 +48,7 @@ axs.plot(range(1,len(best_data)+1), [element * 100 for element in best_data], la
 axs.plot(range(1,len(temp_data)+1), [element * 100 for element in temp_data],linewidth = 3,label = 'Filtered')
 axs.legend(loc=4,fontsize=12)
 
-plt.savefig('/home/reventlov/TAI/Project/Ludo Q-learning project/report/Best_winrate.png',bbox_inches='tight')
+plt.savefig('/home/reventlov/TAI/Project/Ludo Q-learning project/src/images/Best_winrate.png',bbox_inches='tight')
 
 plt.show()
 

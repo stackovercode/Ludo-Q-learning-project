@@ -2,6 +2,9 @@ import numpy as np
 import QLearning
 import ludopy
 import unittest
+import sys
+sys.path.append("./LUDOpy/")
+
 
 def run():
     #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
@@ -108,3 +111,4 @@ class MyTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
