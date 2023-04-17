@@ -275,94 +275,83 @@ class QLearning:
             self.last_action = current_actions[piece_index]
         return piece_index
 
-    def save_Q_table(self,file_name):
-        file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        np.save(file_name, self.Q_table)
+def run():
 
-    def load_Q_table(self,file_name):
-        file_ext = file_name.split(".")[-1]
-        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-        self.Q_table = np.load(file_name)
+    there_is_a_winner = False
+    q_player = 0
+    q = QLearning(q_player)
+    number_of_games = 100
+    number_of_wins = 0
+    array_of_sum_of_rewards = []
+    wins = [0,0,0,0]
 
+    for k in range(number_of_games):
+        g = ludopy.Game()
+        stop_while = False
 
-# def run():
+        while not stop_while:
+            (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
+             there_is_a_winner), player_i = g.get_observation()
+            """
+            print("dice", dice)
+            print("move_pieces", move_pieces)
+            print("player_pieces", player_pieces)
+            print("enemy_pieces", enemy_pieces)
+            print("player_is_a_winner", player_is_a_winner)
+            print("there_is_a_winner", there_is_a_winner)
+            print("player_i", player_i)
+            print('determind_state', q.determined_state(player_pieces, enemy_pieces, g))
+            print('determined_possible_actions', q.determined_possible_actions( player_pieces,enemy_pieces,dice))
+            """
+            if player_i == q_player:
+                piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
+                if there_is_a_winner == 1:
+                    stop_while = True
+                if player_is_a_winner == 1 :
+                    number_of_wins += 1
+            else:
+                if len(move_pieces):
+                    piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
+                else:
+                    piece_to_move = -1
 
-#     there_is_a_winner = False
-#     q_player = 0
-#     q = QLearning(q_player)
-#     number_of_games = 100
-#     number_of_wins = 0
-#     array_of_sum_of_rewards = []
-#     wins = [0,0,0,0]
-
-#     for k in range(number_of_games):
-#         g = ludopy.Game()
-#         stop_while = False
-
-#         while not stop_while:
-#             (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
-#              there_is_a_winner), player_i = g.get_observation()
-#             """
-#             print("dice", dice)
-#             print("move_pieces", move_pieces)
-#             print("player_pieces", player_pieces)
-#             print("enemy_pieces", enemy_pieces)
-#             print("player_is_a_winner", player_is_a_winner)
-#             print("there_is_a_winner", there_is_a_winner)
-#             print("player_i", player_i)
-#             print('determind_state', q.determined_state(player_pieces, enemy_pieces, g))
-#             print('determined_possible_actions', q.determined_possible_actions( player_pieces,enemy_pieces,dice))
-#             """
-#             if player_i == q_player:
-#                 piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
-#                 if there_is_a_winner == 1:
-#                     stop_while = True
-#                 if player_is_a_winner == 1 :
-#                     number_of_wins += 1
-#             else:
-#                 if len(move_pieces):
-#                     piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
-#                 else:
-#                     piece_to_move = -1
-
-#             # Test progress
-#             # print("piece_to_move",piece_to_move)
-#             # cv2.imshow('test', (g.render_environment()))
-#             # cv2.waitKey(0)
-#             _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
-#         print("sum_of_rewards",q.sum_of_rewards)
-#         print("number_of_games",q.number_of_games)
-#         print("number_of_wins",number_of_wins, "%")
-#         #print("Win rate: ", number_of_wins / number_of_games * 100, "%")
+            # Test progress
+            # print("piece_to_move",piece_to_move)
+            # cv2.imshow('test', (g.render_environment()))
+            # cv2.waitKey(0)
+            _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
+        print("sum_of_rewards",q.sum_of_rewards)
+        print("number_of_games",q.number_of_games)
+        print("number_of_wins",number_of_wins, "%")
+        #print("Win rate: ", number_of_wins / number_of_games * 100, "%")
         
-#         plt.close('all')
-#         array_of_sum_of_rewards.append(q.sum_of_rewards)
+        plt.close('all')
+        array_of_sum_of_rewards.append(q.sum_of_rewards)
 
-#         # Test progress
-#         # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-#         # plot_heat_map(q)
-#         # plt.show()
+        # Test progress
+        # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+        # plot_heat_map(q)
+        # plt.show()
 
-#         q.reset_game()
-#         wins[g.first_winner_was] = wins[g.first_winner_was] + 1
-#     plt.plot(range(len(array_of_sum_of_rewards)), array_of_sum_of_rewards)
-#     plt.xlabel('Episodes', fontsize=12)
-#     plt.ylabel('reward', fontsize=12)
-#     plt.show()
+        q.reset_game()
+        wins[g.first_winner_was] = wins[g.first_winner_was] + 1
+    plt.plot(range(len(array_of_sum_of_rewards)), array_of_sum_of_rewards)
+    plt.xlabel('Episodes', fontsize=12)
+    plt.ylabel('reward', fontsize=12)
+    plt.show()
 
-#     print("Saving history to numpy file")
-#     g.save_hist("game_history.npy")
-#     print("Saving game video")
-#     g.save_hist_video("game_video.mp4")
+    print("Saving history to numpy file")
+    g.save_hist("game_history.npy")
+    print("Saving game video")
+    g.save_hist_video("game_video.mp4")
 
-#     return True
-
-
-# class MyTestCase(unittest.TestCase):
-#     def test_something(self):
-#         self.assertEqual(True, run())
+    return True
 
 
-# if __name__ == '__main__':
-#     unittest.main()
+class MyTestCase(unittest.TestCase):
+    def test_something(self):
+        self.assertEqual(True, run())
+
+
+if __name__ == '__main__':
+    unittest.main()
