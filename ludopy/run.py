@@ -9,10 +9,10 @@ def run():
     discount_factor_vec = [0.4] #[0.1, 0.2, 0.3, 0.4, 0.5]
     explore_rate_vec = [0.05] #[0.05, 0.10, 0.15, 0.2]
 
-    after = 0
+    after = 10
 
     number_of_runs_without_learning = 25
-    number_of_runs_with_learning = 400
+    number_of_runs_with_learning = 20
 
     q_player = 0
 
@@ -30,10 +30,12 @@ def run():
                 q.explore_rate = ER_value
 
                 for k in range(number_of_runs_with_learning):
-                    print('Test2:   Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
+                    print('Test:   Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
                     g = ludopy.Game()
                     stop_while = False
                     q.training = 1
+                    #number_of_wins_W = 0
+
                     while not stop_while:
                         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
                          there_is_a_winner), player_i = g.get_observation()
@@ -42,6 +44,7 @@ def run():
                             piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                             if there_is_a_winner == 1:
                                 stop_while = True
+                                #number_of_wins_W += 1
                         else:
                             if len(move_pieces):
                                 piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
@@ -54,6 +57,7 @@ def run():
                     if after < k:
                         wins = [0, 0, 0, 0]
                         q.training = 0
+                        #number_of_wins_WO = 0
 
                         number_of_steps = 0
                         for j in range(number_of_runs_without_learning):
@@ -67,6 +71,7 @@ def run():
                                     piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                                     if there_is_a_winner == 1:
                                         stop_while = True
+                                        #number_of_wins_WO += 1
                                 else:
                                     if len(move_pieces):
                                         piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]

@@ -68,7 +68,7 @@ class QLearning:
         # Parameters for the algorithm
         self.learning_rate = 0.7 # alpha
         self.discount_factor = 0.4 #gama pre 0.01
-        self.explore_rate = 0.5 # epsilon
+        self.explore_rate = 0.4 # epsilon
         self.sum_of_rewards = 0.0
         self.training = 1 # determineds if the q table is updated and if there is going to be any explorations.
         self.Q_table = np.zeros((number_States, number_Actions))
@@ -90,53 +90,56 @@ class QLearning:
         self.sum_of_rewards = 0.0
         self.number_of_games += 1
 
-     # State determination logic
-    def determined_state(self,player_pieces, enemy_pieces, game):
-        state_of_pieces = [startArea, startArea, startArea, startArea]
-        for piece_index in range(no_gameBricks):
+    def determined_state(self, player_pieces):
+        return player_pieces
 
-            if player_pieces[piece_index] == player.HOME_INDEX:  # home
-                state_of_pieces[piece_index] = startArea
-            elif player_pieces[piece_index] in player.HOME_AREAL_INDEXS:  # goal zone
-                state_of_pieces[piece_index] = goalArea
-            elif player_pieces[piece_index] == player.GOAL_INDEX:  # goal
-                state_of_pieces[piece_index] = winningArea
-            elif (player_pieces[piece_index] in player.GLOB_INDEXS) or (
-                    player_pieces[piece_index] == player.START_INDEX or count(player_pieces,player_pieces[piece_index])>1 ):
-                state_of_pieces[piece_index] = safeArea
-            else:
-                state_determined = 0
-                for index in range(len(player.LIST_ENEMY_GLOB_INDEX)):
-                    if player_pieces[piece_index] == player.LIST_ENEMY_GLOB_INDEX[index]:
-                        if player.HOME_INDEX in enemy_pieces[index]:
-                            if not (index in game.ghost_players):
-                                state_of_pieces[piece_index] = dangerArea
-                            else:
-                                state_of_pieces[piece_index] = safeArea
-                            state_determined = 1
-                            break
-                if state_determined == 0:
-                    if player_pieces[piece_index] in player.STAR_INDEXS:
-                        if player_pieces[piece_index] in player.STAR_INDEXS[1::2]:
-                            range_to_look_for_enemies = list(range(1, 7))
-                            range_to_look_for_enemies.extend(list(range(8, 14)))
-                        else:
-                            range_to_look_for_enemies = list(range(1, 13))
-                    else:
-                        range_to_look_for_enemies = list(range(1, 7))
-                    piece_pos = player_pieces[piece_index]
-                    for index in range_to_look_for_enemies:
-                        piece_pos = player_pieces[piece_index] - index
-                        if piece_pos < 1:
-                            piece_pos = 52 + piece_pos
-                        enemy_at_pos, _ = player.get_enemy_at_pos(piece_pos, enemy_pieces)
-                        if not (enemy_at_pos == player.NO_ENEMY):
-                            state_of_pieces[piece_index] = dangerArea
-                            state_determined = 1
-                            break
-                if state_determined == 0:
-                    state_of_pieces[piece_index] = defaultArea
-        return state_of_pieces
+    #  # State determination logic
+    # def determined_state(self,player_pieces, enemy_pieces, game):
+    #     state_of_pieces = [startArea, startArea, startArea, startArea]
+    #     for piece_index in range(no_gameBricks):
+
+    #         if player_pieces[piece_index] == player.HOME_INDEX:  # home
+    #             state_of_pieces[piece_index] = startArea
+    #         elif player_pieces[piece_index] in player.HOME_AREAL_INDEXS:  # goal zone
+    #             state_of_pieces[piece_index] = goalArea
+    #         elif player_pieces[piece_index] == player.GOAL_INDEX:  # goal
+    #             state_of_pieces[piece_index] = winningArea
+    #         elif (player_pieces[piece_index] in player.GLOB_INDEXS) or (
+    #                 player_pieces[piece_index] == player.START_INDEX or count(player_pieces,player_pieces[piece_index])>1 ):
+    #             state_of_pieces[piece_index] = safeArea
+    #         else:
+    #             state_determined = 0
+    #             for index in range(len(player.LIST_ENEMY_GLOB_INDEX)):
+    #                 if player_pieces[piece_index] == player.LIST_ENEMY_GLOB_INDEX[index]:
+    #                     if player.HOME_INDEX in enemy_pieces[index]:
+    #                         if not (index in game.ghost_players):
+    #                             state_of_pieces[piece_index] = dangerArea
+    #                         else:
+    #                             state_of_pieces[piece_index] = safeArea
+    #                         state_determined = 1
+    #                         break
+    #             if state_determined == 0:
+    #                 if player_pieces[piece_index] in player.STAR_INDEXS:
+    #                     if player_pieces[piece_index] in player.STAR_INDEXS[1::2]:
+    #                         range_to_look_for_enemies = list(range(1, 7))
+    #                         range_to_look_for_enemies.extend(list(range(8, 14)))
+    #                     else:
+    #                         range_to_look_for_enemies = list(range(1, 13))
+    #                 else:
+    #                     range_to_look_for_enemies = list(range(1, 7))
+    #                 piece_pos = player_pieces[piece_index]
+    #                 for index in range_to_look_for_enemies:
+    #                     piece_pos = player_pieces[piece_index] - index
+    #                     if piece_pos < 1:
+    #                         piece_pos = 52 + piece_pos
+    #                     enemy_at_pos, _ = player.get_enemy_at_pos(piece_pos, enemy_pieces)
+    #                     if not (enemy_at_pos == player.NO_ENEMY):
+    #                         state_of_pieces[piece_index] = dangerArea
+    #                         state_determined = 1
+    #                         break
+    #             if state_determined == 0:
+    #                 state_of_pieces[piece_index] = defaultArea
+    #     return state_of_pieces
 
     # Possible action determination logic
     def determined_possible_actions(self, player_pieces, enemy_pieces, dice):
@@ -284,85 +287,3 @@ class QLearning:
         file_ext = file_name.split(".")[-1]
         assert file_ext == "npy", "The file extension has to be npy (numpy file)"
         self.Q_table = np.load(file_name)
-
-
-# def run():
-
-#     there_is_a_winner = False
-#     q_player = 0
-#     q = QLearning(q_player)
-#     number_of_games = 100
-#     number_of_wins = 0
-#     array_of_sum_of_rewards = []
-#     wins = [0,0,0,0]
-
-#     for k in range(number_of_games):
-#         g = ludopy.Game()
-#         stop_while = False
-
-#         while not stop_while:
-#             (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
-#              there_is_a_winner), player_i = g.get_observation()
-#             """
-#             print("dice", dice)
-#             print("move_pieces", move_pieces)
-#             print("player_pieces", player_pieces)
-#             print("enemy_pieces", enemy_pieces)
-#             print("player_is_a_winner", player_is_a_winner)
-#             print("there_is_a_winner", there_is_a_winner)
-#             print("player_i", player_i)
-#             print('determind_state', q.determined_state(player_pieces, enemy_pieces, g))
-#             print('determined_possible_actions', q.determined_possible_actions( player_pieces,enemy_pieces,dice))
-#             """
-#             if player_i == q_player:
-#                 piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
-#                 if there_is_a_winner == 1:
-#                     stop_while = True
-#                 if player_is_a_winner == 1 :
-#                     number_of_wins += 1
-#             else:
-#                 if len(move_pieces):
-#                     piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
-#                 else:
-#                     piece_to_move = -1
-
-#             # Test progress
-#             # print("piece_to_move",piece_to_move)
-#             # cv2.imshow('test', (g.render_environment()))
-#             # cv2.waitKey(0)
-#             _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
-#         print("sum_of_rewards",q.sum_of_rewards)
-#         print("number_of_games",q.number_of_games)
-#         print("number_of_wins",number_of_wins, "%")
-#         #print("Win rate: ", number_of_wins / number_of_games * 100, "%")
-        
-#         plt.close('all')
-#         array_of_sum_of_rewards.append(q.sum_of_rewards)
-
-#         # Test progress
-#         # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-#         # plot_heat_map(q)
-#         # plt.show()
-
-#         q.reset_game()
-#         wins[g.first_winner_was] = wins[g.first_winner_was] + 1
-#     plt.plot(range(len(array_of_sum_of_rewards)), array_of_sum_of_rewards)
-#     plt.xlabel('Episodes', fontsize=12)
-#     plt.ylabel('reward', fontsize=12)
-#     plt.show()
-
-#     print("Saving history to numpy file")
-#     g.save_hist("game_history.npy")
-#     print("Saving game video")
-#     g.save_hist_video("game_video.mp4")
-
-#     return True
-
-
-# class MyTestCase(unittest.TestCase):
-#     def test_something(self):
-#         self.assertEqual(True, run())
-
-
-# if __name__ == '__main__':
-#     unittest.main()
