@@ -3,7 +3,8 @@ import QLearning
 import ludopy
 import unittest
 import sys
-sys.path.append("./LUDOpy/")
+sys.path.append("../")
+sys.path.append("/home/reventlov/TAI/Project/Ludo Q-learning project/LUDOpy/ludopy")
 
 
 def run():

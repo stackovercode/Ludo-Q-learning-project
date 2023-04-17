@@ -4,14 +4,11 @@ import sys
 import os
 import random
 
-# Add the path to the LUDOpy directory to the Python path
-# Add the path to the parent directory of LUDOpy to the Python path
-ludopy_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'LUDOpy'))
-parent_dir = os.path.dirname(ludopy_dir)
-sys.path.append(parent_dir)
+sys.path.append("../")
+
 
 # Import the player module from the LUDOpy package
-from LUDOpy.ludopy import player
+from ..LUDOpy.ludopy import player
 
 import numpy as np
 import matplotlib.pyplot as plt
