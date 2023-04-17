@@ -6,7 +6,9 @@ For normal use of ludopy only ludopy.Game should be needed.
 
 # Network 
 
-The network implenting on the Ludo game engine are Q-learning On-Policy TD control.
+The network implented are Q-learning On-Policy TD control.
+
+Based on the Ludo game engine
 
 [![PyPI version](https://badge.fury.io/py/ludopy.svg)](https://badge.fury.io/py/ludopy) ![Python application](https://github.com/SimonLBSoerensen/LUDOpy/workflows/Python%20application/badge.svg) [![GitHub license](https://img.shields.io/github/license/SimonLBSoerensen/LUDOpy.svg)](https://github.com/SimonLBSoerensen/LUDOpy/blob/master/LICENSE) 
 
