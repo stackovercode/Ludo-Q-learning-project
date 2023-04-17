@@ -12,7 +12,7 @@ def run():
     after = 10
 
     number_of_runs_without_learning = 25
-    number_of_runs_with_learning = 20
+    number_of_runs_with_learning = 40
 
     q_player = 0
 
