@@ -119,7 +119,7 @@ class QLearning:
 
 
     # Possible action determination logic
-    def determined_possible_actions(self, player_pieces, enemy_pieces, dice):
+    def determined_actions(self, player_pieces, enemy_pieces, dice):
         possible_actions = []
         for piece_index, old_piece_pos in enumerate(player_pieces):
             new_piece_pos = old_piece_pos + dice
@@ -248,7 +248,7 @@ class QLearning:
 
     # Update Q-table logic
     def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner):
-        current_actions = self.determined_possible_actions(player_pieces,enemy_pieces,dice)
+        current_actions = self.determined_actions(player_pieces,enemy_pieces,dice)
         current_states = self.determined_state(player_pieces, enemy_pieces, game)
         piece_index = self.pick_action(current_states, current_actions)
         if self.training == 1 and not(piece_index == -1):
