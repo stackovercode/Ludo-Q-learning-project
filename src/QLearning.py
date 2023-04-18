@@ -276,8 +276,6 @@ class QLearning:
         np.save(data_file_path, self.Q_table)
 
 
-
-
     def load_Q_table(self,file_name):
         file_ext = file_name.split(".")[-1]
         assert file_ext == "npy", "The file extension has to be npy (numpy file)"
