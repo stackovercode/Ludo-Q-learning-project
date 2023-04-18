@@ -33,17 +33,17 @@ def plot_heatMap(q):
 
 def run():
     #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
-    learning_rate_vec = [0.1]
-    discount_factor_vec = [0.4]
-    explore_rate_vec = [0.05]
+    learning_rate_vec = [0.6] # 0.1
+    discount_factor_vec = [0.4] #0.4
+    explore_rate_vec = [0.4] #0.05
     # learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
 
-    after = 10
+    after = 500
 
     number_of_runs_without_learning = 25
-    number_of_runs_with_learning = 40
+    number_of_runs_with_learning = 2000
 
     q_player = 0
 
