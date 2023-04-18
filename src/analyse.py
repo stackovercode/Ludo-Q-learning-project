@@ -11,13 +11,13 @@ def moving_average(list,N):
 			moving_aves.append(moving_ave)
 	return moving_aves
 
+
+
 file_name = 'Test1'
 
 
 parameters_1 = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test_run_parameters.npy',allow_pickle=True)
 win_rate_vec = np.load('/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/Test_run_data.npy')
-
-
 
 explore_rate_vec = parameters_1[0]
 
@@ -32,7 +32,7 @@ best_data = []
 for ER_index, ER_value in enumerate(explore_rate_vec):
 	for DF_index, DF_value in enumerate(discount_factor_vec):
 		for LR_index, LR_value in enumerate(learning_rate_vec):
-			temp_win_rate = np.sum(win_rate_vec[ER_index][DF_index][LR_index][200:])/len(win_rate_vec[ER_index][DF_index][LR_index][200:]) # 700 / 700
+			temp_win_rate = np.sum(win_rate_vec[ER_index][DF_index][LR_index][20:])/len(win_rate_vec[ER_index][DF_index][LR_index][20:]) # 700 / 700
 			if temp_win_rate > highest_win_rate :
 				highest_win_rate = temp_win_rate
 				temp_data = moving_average(win_rate_vec[ER_index][DF_index][LR_index],15)

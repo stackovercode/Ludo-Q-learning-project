@@ -3,15 +3,42 @@ import QLearning
 import ludopy
 import unittest
 import sys
+import os
+import matplotlib.pyplot as plt
 sys.path.append("../")
 
+
+def plot_heatMap(q):
+    state_labels = ["start", "goal", "winning", "danger", "safe", "default"]
+    action_labels = ["Starting", "Default", "Inside_goal", "Enter_goal", "Enter_winning", "Star", "Move_safety", "Move_away_safety", "Kill_enemy", "Die_action", "No_action"]
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(q.Q_table, cmap='coolwarm')
+
+    ax.set_xticks(np.arange(len(action_labels)))
+    ax.set_yticks(np.arange(len(state_labels)))
+    ax.set_xticklabels(action_labels)
+    ax.set_yticklabels(state_labels)
+
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    for i in range(len(state_labels)):
+        for j in range(len(action_labels)):
+            text = ax.text(j, i, int(q.Q_table[i, j] * 100), ha="center", va="center", color="black")
+
+    ax.set_title("Q-table")
+    fig.tight_layout()
+    plt.show()
 
 
 def run():
     #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
-    learning_rate_vec = [0.1] #[0.1, 0.2, 0.3, 0.4, 0.5]
-    discount_factor_vec = [0.4] #[0.1, 0.2, 0.3, 0.4, 0.5]
-    explore_rate_vec = [0.05] #[0.05, 0.10, 0.15, 0.2]
+    learning_rate_vec = [0.1]
+    discount_factor_vec = [0.4]
+    explore_rate_vec = [0.05]
+    # learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
 
     after = 10
 
@@ -33,6 +60,8 @@ def run():
                 q.discount_factor = DF_value
                 q.explore_rate = ER_value
 
+                array_of_sum_of_rewards = []
+
                 for k in range(number_of_runs_with_learning):
                     print('Test:   Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
                     g = ludopy.Game()
@@ -45,7 +74,7 @@ def run():
                          there_is_a_winner), player_i = g.get_observation()
 
                         if player_i == q_player:
-                            piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
+                            piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                             if there_is_a_winner == 1:
                                 stop_while = True
                                 #number_of_wins_W += 1
@@ -57,7 +86,7 @@ def run():
 
                         _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
 
-                    q.reset_game()
+                    q.reset()
                     if after < k:
                         wins = [0, 0, 0, 0]
                         q.training = 0
@@ -72,7 +101,7 @@ def run():
                                  there_is_a_winner), player_i = g.get_observation()
                                 if player_i == q_player:
                                     number_of_steps = number_of_steps + 1
-                                    piece_to_move = q.update_q_table(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
+                                    piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                                     if there_is_a_winner == 1:
                                         stop_while = True
                                         #number_of_wins_WO += 1
@@ -83,26 +112,56 @@ def run():
                                         piece_to_move = -1
                                 _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
 
-                            q.reset_game()
+                            array_of_sum_of_rewards.append(q.sum_of_rewards)
+
+                            # # Test progress
+                            # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+                            # plot_heatMap(q)
+                            # plt.show()
+
+                            q.reset()
                             wins[g.first_winner_was] = wins[g.first_winner_was] + 1
                         win_rate_vec[ER_index][DF_index][LR_index][k] = (wins[q_player] / number_of_runs_without_learning)
                         print('Win rate: ', wins[q_player] / number_of_runs_without_learning)
 
-                q.save_Q_table("Best_learning_parameters" + str(k) + ".npy")
+                # Test progress
+                plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+                plot_heatMap(q)
+                #plt.show()
+                q.save_QTable("Best_learning_parameters" + str(k) + ".npy")
 
-    test_name = "Test_run"
-    file_name = test_name + "_data.npy"
-    file_ext = file_name.split(".")[-1]
-    assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-    np.save(file_name, win_rate_vec)
+    # specify the folder path
+    folder_path = os.path.join(os.getcwd(), "/home/reventlov/TAI/Project/Ludo Q-learning project/src/data")
+    #test_name = "Test_run"
+    test_name = ""
 
-    file_name = test_name + "_parameters.npy"
-    file_ext = file_name.split(".")[-1]
-    assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-    np.save(file_name, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_with_learning, number_of_runs_without_learning])
+    # create the folder if it doesn't exist
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
+    # save the data file to the folder
+    data_file_path = os.path.join(folder_path, test_name + "data.npy")
+    np.save(data_file_path, win_rate_vec)
+
+    # save the parameters file to the folder
+    param_file_path = os.path.join(folder_path, test_name + "parameters.npy")
+    np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_with_learning, number_of_runs_without_learning])
+
+
+    #file_name = test_name + "_data.npy"
+    # file_ext = file_name.split(".")[-1]
+    # assert file_ext == "npy", "The file extension has to be npy (numpy file)"
+    #np.save(file_name, win_rate_vec)
+
+    # file_name = test_name + "_parameters.npy"
+    # file_ext = file_name.split(".")[-1]
+    # assert file_ext == "npy", "The file extension has to be npy (numpy file)"
+    #np.save(file_name, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_with_learning, number_of_runs_without_learning])
 
     return True
+
+
+
 
 
 class MyTestCase(unittest.TestCase):
