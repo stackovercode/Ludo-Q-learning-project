@@ -5,7 +5,7 @@ import unittest
 import sys
 import os
 import matplotlib.pyplot as plt
-sys.path.append("../")
+#sys.path.append("../")
 
 
 def plot_heatMap(q):

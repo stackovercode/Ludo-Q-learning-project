@@ -4,15 +4,9 @@ import sys
 import os
 import random
 
-sys.path.append("../")
+#sys.path.append("../")
 
-
-# Import the player module from the LUDOpy package
 import ludopy.player as player
-import ludopy.game as game
-import ludopy.visualizer as visualizer
-
-
 import numpy as np
 
 # Number of game bricks used by every player
@@ -270,7 +264,7 @@ class QLearning:
         return piece_index
 
     def save_QTable(self,file_name):
-        folder_path = os.path.join(os.getcwd(), "/home/reventlov/TAI/Project/Ludo Q-learning project/src/data/")
+        folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
         data_file_path = os.path.join(folder_path, file_name)
