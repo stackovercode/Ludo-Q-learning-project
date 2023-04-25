@@ -12,8 +12,6 @@ from ludopy import player
 
 import numpy as np
 
-
-
 # Number of game bricks used by every player
 no_gameBricks = 4
 number_States = 6

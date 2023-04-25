@@ -131,7 +131,7 @@ def run():
                 q.save_QTable("Best_learning_parameters" + str(k) + ".npy")
 
     # specify the folder path
-    folder_path = os.path.join(os.getcwd(), "/home/reventlov/TAI/Project/Ludo Q-learning project/src/data")
+    folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
     #test_name = "Test_run"
     test_name = ""
 
