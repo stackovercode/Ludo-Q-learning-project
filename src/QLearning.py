@@ -4,7 +4,9 @@ import sys
 import os
 import random
 
-#sys.path.append("../")
+sys.path.append("./")
+#sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+#print("MY PATH: ", os.path.dirname(os.path.realpath("./")))
 
 import ludopy.player as player
 import numpy as np

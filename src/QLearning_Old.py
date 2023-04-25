@@ -5,7 +5,7 @@ import sys
 import random
 sys.path.append("../")
 import ludopy
-from LUDOpy.ludopy import player
+from ludopy import player
 import matplotlib.pyplot as plt
 
 # Number of game bricks used by every player
