@@ -3,7 +3,7 @@ import unittest
 import cv2
 import sys
 import random
-#sys.path.append("../")
+sys.path.append("../")
 import ludopy
 import player
 import matplotlib.pyplot as plt

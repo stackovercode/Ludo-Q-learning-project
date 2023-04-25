@@ -1,5 +1,4 @@
 import sys
-sys.path.append("/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
 import numpy as np
 import QLearning
 import ludopy 
@@ -52,7 +51,7 @@ def run():
     for ER_index, ER_value in enumerate(explore_rate_vec):
         for DF_index, DF_value in enumerate(discount_factor_vec):
             for LR_index, LR_value in enumerate(learning_rate_vec):
-                q = QLearning.QLearning(q_player)
+                q = QLearning.QLearn(q_player)
                 q.training = 1
 
                 q.learning_rate = LR_value

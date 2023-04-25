@@ -1,10 +1,10 @@
 import sys
-sys.path.append("/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
 import numpy as np
 import unittest
 import cv2
 import random
 import ludopy.player as player
+import os
 #import matplotlib.pyplot as plt
 #from ludopy.player import Player
 
@@ -42,7 +42,7 @@ def count(list, value):
     return no_Ocurrences
 
 
-class QLearning:
+class QLearn:
     def __init__(self, index):
         # Parameters for the algorithm
         self.learning_rate = 0.7 # alpha
@@ -84,7 +84,7 @@ class QLearning:
                 state_of_pieces[piece_index] = safeArea
             else:
                 state_determined = False
-                for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX):
+                for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
                     if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
                         if enemy_index not in game.ghost_players:
                             state_of_pieces[piece_index] = dangerArea
@@ -154,7 +154,7 @@ class QLearning:
                 continue
 
             # Globe owned by an enemy
-            if new_piece_pos in player.LIST_ENEMY_GLOB_INDEX:
+            if new_piece_pos in player.LIST_ENEMY_GLOB_INDEX1:
                 globs_enemy = player.LIST_TAILE_ENEMY_GLOBS.index(player.BORD_TILES[new_piece_pos])
                 enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
                 if enemy_at_pos != player.NO_ENEMY:
