@@ -3,10 +3,11 @@ import unittest
 import cv2
 import sys
 import random
-sys.path.append("../")
+#sys.path.append("../")
 import ludopy
-from ludopy import player
+import player
 import matplotlib.pyplot as plt
+
 
 # Number of game bricks used by every player
 no_gameBricks = 4
@@ -275,7 +276,7 @@ class QLearning:
             self.last_action = current_actions[piece_index]
         return piece_index
 
-def run():
+def run2():
 
     there_is_a_winner = False
     q_player = 0
@@ -350,7 +351,7 @@ def run():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        self.assertEqual(True, run())
+        self.assertEqual(True, run2())
 
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ GLOB_INDEXS = [9, 22, 35, 48]
 ENEMY_1_GLOB_INDX = 14
 ENEMY_2_GLOB_INDX = 27
 ENEMY_3_GLOB_INDX = 40
-#LIST_ENEMY_GLOB_INDEX = [ENEMY_1_GLOB_INDX, ENEMY_2_GLOB_INDX, ENEMY_3_GLOB_INDX]
+LIST_ENEMY_GLOB_INDEX = [ENEMY_1_GLOB_INDX, ENEMY_2_GLOB_INDX, ENEMY_3_GLOB_INDX]
 STAR_AT_GOAL_AREAL_INDX = STAR_INDEXS[-1]
 
 BORD_TILES = np.full(TOTAL_NUMBER_OF_TAILES, TAILE_FREE)
@@ -297,7 +297,7 @@ class Player:
                 move_enemy_home_from_poss.append(new_piece_pos)
             self.pieces[piece] = new_piece_pos
 
-        # If the case was not caught then there is a error
+        # If the case was not caught then there is an error
         else:
             print("\nold_piece_pos:", old_piece_pos, "\nnew_piece_pos", new_piece_pos,
                   "\nBORD_TILES[old_piece_pos]:", BORD_TILES[old_piece_pos],
@@ -329,4 +329,3 @@ class Player:
         self.pieces = []
         for i in range(self.number_of_pieces):
             self.pieces.append(HOME_INDEX)
-

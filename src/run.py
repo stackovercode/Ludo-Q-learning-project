@@ -1,15 +1,11 @@
+import sys
+sys.path.append("/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
 import numpy as np
 import QLearning
-import ludopy
+import ludopy 
 import unittest
-import sys
 import os
 import matplotlib.pyplot as plt
-sys.path.append("./")
-
-#sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-#print("MY PATH: ", os.path.dirname(os.path.realpath(__file__)))
-
 
 def plot_heatMap(q):
     state_labels = ["start", "goal", "winning", "danger", "safe", "default"]

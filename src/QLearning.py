@@ -1,15 +1,13 @@
+import sys
+sys.path.append("/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
+import numpy as np
 import unittest
 import cv2
-import sys
-import os
 import random
-
-sys.path.append("./")
-#sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-#print("MY PATH: ", os.path.dirname(os.path.realpath("./")))
-
 import ludopy.player as player
-import numpy as np
+#import matplotlib.pyplot as plt
+#from ludopy.player import Player
+
 
 # Number of game bricks used by every player
 no_gameBricks = 4
