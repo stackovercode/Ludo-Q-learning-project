@@ -9,7 +9,8 @@ sys.path.append("../")
 
 # Import the player module from the LUDOpy package
 import ludopy.player as player
-
+import ludopy.game as game
+import ludopy.visualizer as visualizer
 
 
 import numpy as np
