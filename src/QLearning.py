@@ -3,7 +3,7 @@ import numpy as np
 import unittest
 import cv2
 import random
-import ludopy.player as player
+from ludopy import player
 import os
 #import matplotlib.pyplot as plt
 #from ludopy.player import Player

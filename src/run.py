@@ -1,4 +1,6 @@
 import sys
+sys.path.insert(0, "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
+
 import numpy as np
 import QLearning
 import ludopy 
