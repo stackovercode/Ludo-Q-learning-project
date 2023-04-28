@@ -8,6 +8,12 @@ import unittest
 import os
 import matplotlib.pyplot as plt
 
+import tensorflow as tf
+
+device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
+print(f"Running on {device}")
+
+
 def plot_heatMap(q):
     state_labels = ["start", "goal", "winning", "danger", "safe", "default"]
     action_labels = ["Starting", "Default", "Inside_goal", "Enter_goal", "Enter_winning", "Star", "Move_safety", "Move_away_safety", "Kill_enemy", "Die_action", "No_action"]
@@ -40,9 +46,9 @@ def run():
     # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
 
-    after = 500
+    after = 200
 
-    number_of_runs_without_learning = 25
+    number_of_runs_without_learning = 200
     number_of_runs_with_learning = 2000
 
     q_player = 0
@@ -166,7 +172,8 @@ def run():
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
-        self.assertEqual(True, run())
+        with tf.device('/device:GPU:0'):
+            self.assertEqual(True, run())
 
 
 if __name__ == '__main__':
