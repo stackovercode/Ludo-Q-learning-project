@@ -1,36 +1,8 @@
 import sys
 sys.path.insert(0, "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
 import numpy as np
-import unittest
-import cv2
-import random
 from ludopy import player
 import os
-
-# Number of game bricks used by every player
-no_gameBricks = 4
-number_States = 6
-number_Actions = 11
-
-## Chosen states for the game areas: startArea, goalArea, winningArea, dangerArea, safeArea, defaultArea
-startArea = 0
-goalArea = 1
-winningArea = 2
-dangerArea = 3
-safeArea = 4
-defaultArea = 5
-
-starting_action = 0
-default_action = 1
-inside_goalArea_action = 2
-enter_goalArea_action = 3
-enter_winningArea_action = 4
-star_action = 5
-move_inside_safety_action = 6
-move_outside_safety_action = 7
-kill_player_action = 8
-die_action = 9
-no_action = 10
 
 def count(list, value):
     no_Ocurrences = 0;
@@ -42,8 +14,39 @@ def count(list, value):
 
 class QLearn:
     def __init__(self, index):
+        # Number of game bricks 
+        self.no_gameBricks = 4
+        self.number_States = 6
+        self.number_Actions = 11
+
+        # Initialize states, actions and parameters
+        self.intializeStates()
+        self.initializeActions()
         self.initializeParameters(index)
+        
+        # Initialize reset
         self.reset()
+
+    def intializeStates(self):
+        self.startArea = 0
+        self.goalArea = 1
+        self.winningArea = 2
+        self.dangerArea = 3
+        self.safeArea = 4
+        self.defaultArea = 5
+        
+    def initializeActions(self):
+        self.starting_action = 0
+        self.default_action = 1
+        self.inside_goalArea_action = 2
+        self.enter_goalArea_action = 3
+        self.enter_winningArea_action = 4
+        self.star_action = 5
+        self.move_inside_safety_action = 6
+        self.move_outside_safety_action = 7
+        self.kill_player_action = 8
+        self.die_action = 9
+        self.no_action = 10
 
     def initializeParameters(self, index):
         self.learning_rate = 0.7  # alpha
@@ -51,7 +54,7 @@ class QLearn:
         self.explore_rate = 0.4  # epsilon
         self.sum_of_rewards = 0.0
         self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
-        self.Q_table = np.zeros((number_States, number_Actions), dtype=float)
+        self.Q_table = np.zeros((self.number_States, self.number_Actions), dtype=float)
 
 
         self.player_index = index
@@ -60,34 +63,34 @@ class QLearn:
 
 
     def reset(self):
-        self.current_state = [startArea] * 4
+        self.current_state = [self.startArea] * 4
         self.last_action = None
-        self.last_state = startArea
+        self.last_state = self.startArea
         self.last_player_pieces = [0] * 4
         self.sum_of_rewards = 0.0
         self.number_of_games += 1
 
     # State determination logic
     def determined_state(self, player_pieces, enemy_pieces, game):
-        state_of_pieces = [startArea] * no_gameBricks
+        state_of_pieces = [self.startArea] * self.no_gameBricks
         
         for piece_index, piece_pos in enumerate(player_pieces):
             if piece_pos == player.HOME_INDEX:
-                state_of_pieces[piece_index] = startArea
+                state_of_pieces[piece_index] = self.startArea
             elif piece_pos in player.HOME_AREAL_INDEXS:
-                state_of_pieces[piece_index] = goalArea
+                state_of_pieces[piece_index] = self.goalArea
             elif piece_pos == player.GOAL_INDEX:
-                state_of_pieces[piece_index] = winningArea
+                state_of_pieces[piece_index] = self.winningArea
             elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
-                state_of_pieces[piece_index] = safeArea
+                state_of_pieces[piece_index] = self.safeArea
             else:
                 state_determined = False
                 for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
                     if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
                         if enemy_index not in game.ghost_players:
-                            state_of_pieces[piece_index] = dangerArea
+                            state_of_pieces[piece_index] = self.dangerArea
                         else:
-                            state_of_pieces[piece_index] = safeArea
+                            state_of_pieces[piece_index] = self.safeArea
                         state_determined = True
                         break
                 if not state_determined:
@@ -103,10 +106,10 @@ class QLearn:
                         enemy_pos = (piece_pos - index) % 52
                         enemy_at_pos, _ = player.get_enemy_at_pos(enemy_pos, enemy_pieces)
                         if enemy_at_pos != player.NO_ENEMY:
-                            state_of_pieces[piece_index] = dangerArea
+                            state_of_pieces[piece_index] = self.dangerArea
                             break
                     else:
-                        state_of_pieces[piece_index] = defaultArea
+                        state_of_pieces[piece_index] = self.defaultArea
         
         return state_of_pieces
 
@@ -119,36 +122,36 @@ class QLearn:
 
             # Piece at goal
             if old_piece_pos == player.GOAL_INDEX or (old_piece_pos == player.HOME_INDEX and dice < 6):
-                possible_actions.append(no_action)
+                possible_actions.append(self.no_action)
                 continue
 
             # Move out of home
             if old_piece_pos == player.HOME_INDEX and dice == 6:
-                possible_actions.append(starting_action)
+                possible_actions.append(self.starting_action)
                 continue
 
             # Use a star to jump
             if new_piece_pos in player.STAR_INDEXS:
-                possible_actions.append(star_action)
+                possible_actions.append(self.star_action)
                 continue
 
             # Enter goal
             if new_piece_pos == player.GOAL_INDEX or new_piece_pos == player.STAR_AT_GOAL_AREAL_INDX:
-                possible_actions.append(enter_winningArea_action)
+                possible_actions.append(self.enter_winningArea_action)
                 continue
 
             # Globe not owned
             if new_piece_pos in player.GLOB_INDEXS:
                 enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
                 if enemy_at_pos != player.NO_ENEMY:
-                    possible_actions.append(die_action)
+                    possible_actions.append(self.die_action)
                 else:
-                    possible_actions.append(move_inside_safety_action)
+                    possible_actions.append(self.move_inside_safety_action)
                 continue
 
             # Piece on a globe or stacked on top of another piece
             if count(player_pieces, new_piece_pos) > 0 or old_piece_pos in player.GLOB_INDEXS or count(player_pieces, old_piece_pos) > 1:
-                possible_actions.append(move_inside_safety_action)
+                possible_actions.append(self.move_inside_safety_action)
                 continue
 
             # Globe owned by an enemy
@@ -157,95 +160,59 @@ class QLearn:
                 enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
                 if enemy_at_pos != player.NO_ENEMY:
                     if enemy_at_pos != globs_enemy:
-                        possible_actions.append(kill_player_action)
+                        possible_actions.append(self.kill_player_action)
                     else:
-                        possible_actions.append(die_action)
+                        possible_actions.append(self.die_action)
                 else:
-                    possible_actions.append(move_inside_safety_action)
+                    possible_actions.append(self.move_inside_safety_action)
                 continue
 
             # Enemy at position
             enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
             if enemy_at_pos != player.NO_ENEMY:
                 if len(enemy_pieces_at_pos) == 1:
-                    possible_actions.append(kill_player_action)
+                    possible_actions.append(self.kill_player_action)
                 else:
-                    possible_actions.append(die_action)
+                    possible_actions.append(self.die_action)
                 continue
 
             # Enter goal area
             if old_piece_pos < 53 and new_piece_pos > 52:
-                possible_actions.append(enter_goalArea_action)
+                possible_actions.append(self.enter_goalArea_action)
                 continue
 
             # Move outside safety
-            possible_actions.append(move_outside_safety_action)
+            possible_actions.append(self.move_outside_safety_action)
 
         return possible_actions
-
-
-    # # Reward calculation logic
-    # def getReward(self, player_pieces, current_states, there_is_a_winner):
-    #     reward = 0.0
-
-    #     if self.last_action == starting_action:
-    #         reward += 0.3
-    #     if self.last_action == kill_player_action:
-    #         reward += 0.2
-    #     if self.last_action == die_action:
-    #         reward += -0.8
-    #     if self.last_action == default_action:
-    #         reward += 0.05
-    #     if self.last_action == inside_goalArea_action:
-    #         reward += 0.05
-    #     if self.last_action == enter_goalArea_action:
-    #         reward += 0.2
-    #     if self.last_action == star_action:
-    #         reward += 0.15
-    #     if self.last_action == enter_winningArea_action:
-    #         reward += 0.25
-    #     if self.last_action == move_outside_safety_action:
-    #         reward += -0.1
-    #     if self.last_action == move_inside_safety_action:
-    #         reward += 0.1
-    #     if self.last_action == no_action:
-    #         reward += -0.1
-
-    #     for i in range(no_gameBricks):
-    #         if self.last_player_pieces[i] > 0 and player_pieces[i] == 0: 
-    #             # A piece has been moved home
-    #             reward += -0.25
-    #             break
-
-    #     return reward
 
     def getReward(self, player_pieces, current_states, there_is_a_winner):
         reward = 0.0
 
-        if self.last_action == starting_action:
+        if self.last_action == self.starting_action:
             reward += 0.1
-        if self.last_action == kill_player_action:
+        if self.last_action == self.kill_player_action:
             reward += 0.2
-        if self.last_action == die_action:
+        if self.last_action == self.die_action:
             reward += -0.1
-        if self.last_action == default_action:
+        if self.last_action == self.default_action:
             reward += 0.05
-        if self.last_action == inside_goalArea_action:
+        if self.last_action == self.inside_goalArea_action:
             reward += 0.2
-        if self.last_action == enter_goalArea_action:
+        if self.last_action == self.enter_goalArea_action:
             reward += 0.5
-        if self.last_action == star_action:
+        if self.last_action == self.star_action:
             reward += 0.15
-        if self.last_action == enter_winningArea_action:
+        if self.last_action == self.enter_winningArea_action:
             reward += 1.0
-        if self.last_action == move_outside_safety_action:
+        if self.last_action == self.move_outside_safety_action:
             reward += -0.1
-        if self.last_action == move_inside_safety_action:
+        if self.last_action == self.move_inside_safety_action:
             reward += 0.1
-        if self.last_action == no_action:
+        if self.last_action == self.no_action:
             reward += -0.05
 
-        for i in range(no_gameBricks):
+        for i in range(self.no_gameBricks):
             if self.last_player_pieces[i] > 0 and player_pieces[i] == 0: 
                 # A piece has been moved home
                 reward += -0.5
@@ -258,8 +225,8 @@ class QLearn:
     # Action selection logic
     def pick_action(self, piece_states, piece_actions):
         temperature = 0.5  # Set the temperature parameter for the Softmax function
-        if not (piece_actions.count(no_action) == len(piece_actions)):
-            valid_actions = [i for i in range(4) if piece_actions[i] != no_action]
+        if not (piece_actions.count(self.no_action) == len(piece_actions)):
+            valid_actions = [i for i in range(4) if piece_actions[i] != self.no_action]
             q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in valid_actions])
             action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
             best_action_player = valid_actions[np.random.choice(np.arange(len(action_probs)), p=action_probs)]
@@ -284,6 +251,12 @@ class QLearn:
             self.last_player_pieces = player_pieces
             self.last_state = current_states[piece_index]
             self.last_action = current_actions[piece_index]
+            
+            # Learning rate decay (Future work)
+            #     # Check if Q-value update is below threshold
+            # if abs(delta) < threshold:
+            #     self.training = 0  # Stop updating Q-table
+            
         return piece_index
 
     def save_QTable(self,file_name):
