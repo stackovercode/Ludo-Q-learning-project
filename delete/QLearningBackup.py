@@ -51,6 +51,7 @@ class QLearn:
         self.explore_rate = 0.4  # epsilon
         self.sum_of_rewards = 0.0
         self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
+        #self.Q_table = np.zeros((number_States, number_Actions))
         self.Q_table = np.zeros((number_States, number_Actions), dtype=float)
 
 
@@ -184,78 +185,78 @@ class QLearn:
         return possible_actions
 
 
-    # # Reward calculation logic
-    # def getReward(self, player_pieces, current_states, there_is_a_winner):
-    #     reward = 0.0
-
-    #     if self.last_action == starting_action:
-    #         reward += 0.3
-    #     if self.last_action == kill_player_action:
-    #         reward += 0.2
-    #     if self.last_action == die_action:
-    #         reward += -0.8
-    #     if self.last_action == default_action:
-    #         reward += 0.05
-    #     if self.last_action == inside_goalArea_action:
-    #         reward += 0.05
-    #     if self.last_action == enter_goalArea_action:
-    #         reward += 0.2
-    #     if self.last_action == star_action:
-    #         reward += 0.15
-    #     if self.last_action == enter_winningArea_action:
-    #         reward += 0.25
-    #     if self.last_action == move_outside_safety_action:
-    #         reward += -0.1
-    #     if self.last_action == move_inside_safety_action:
-    #         reward += 0.1
-    #     if self.last_action == no_action:
-    #         reward += -0.1
-
-    #     for i in range(no_gameBricks):
-    #         if self.last_player_pieces[i] > 0 and player_pieces[i] == 0: 
-    #             # A piece has been moved home
-    #             reward += -0.25
-    #             break
-
-    #     return reward
-
+    # Reward calculation logic
     def getReward(self, player_pieces, current_states, there_is_a_winner):
         reward = 0.0
 
         if self.last_action == starting_action:
-            reward += 0.1
+            reward += 0.3
         if self.last_action == kill_player_action:
             reward += 0.2
         if self.last_action == die_action:
-            reward += -0.1
+            reward += -0.8
         if self.last_action == default_action:
             reward += 0.05
         if self.last_action == inside_goalArea_action:
-            reward += 0.2
+            reward += 0.05
         if self.last_action == enter_goalArea_action:
-            reward += 0.5
+            reward += 0.2
         if self.last_action == star_action:
             reward += 0.15
         if self.last_action == enter_winningArea_action:
-            reward += 1.0
+            reward += 0.25
         if self.last_action == move_outside_safety_action:
             reward += -0.1
         if self.last_action == move_inside_safety_action:
             reward += 0.1
         if self.last_action == no_action:
-            reward += -0.05
+            reward += -0.1
 
         for i in range(no_gameBricks):
             if self.last_player_pieces[i] > 0 and player_pieces[i] == 0: 
                 # A piece has been moved home
-                reward += -0.5
+                reward += -0.25
                 break
 
         return reward
 
 
+    
 
+    # # Action selection logic
+    # def pick_action(self,piece_states,piece_actions):
+    #     best_action_player = -1
+    #     if not (piece_actions.count(no_action) == len(piece_actions)):
+    #         if self.explore_rate == 0 or float(random.randint(1, 100))/100 >self.explore_rate:
+    #             max_q = -1000
+    #             best_action_player = -1
+    #             for i in range(4):
+    #                 if not(piece_actions[i] == no_action):
+    #                     if max_q < self.Q_table[piece_states[i]][piece_actions[i]]:
+    #                         max_q = self.Q_table[piece_states[i]][piece_actions[i]]
+    #                         best_action_player = i
+    #         else:
+    #             while True:
+    #                 best_action_player = random.randint(0, 3)
+    #                 if not(piece_actions[best_action_player] == no_action):
+    #                     break
+    #     return best_action_player
+    
+    
+    # With softmax to do a Q-learning On-policy TD control
     # Action selection logic
+    # def pick_action(self, piece_states, piece_actions):
+    #     temperature = 0.5  # Set the temperature parameter for the Softmax function
+    #     if not (piece_actions.count(no_action) == len(piece_actions)):
+    #         q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in range(4)])
+    #         action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
+    #         best_action_player = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+    #         if piece_actions[best_action_player] == no_action:
+    #             best_action_player = -1
+    #     else:
+    #         best_action_player = -1
+    #     return best_action_player
+
     def pick_action(self, piece_states, piece_actions):
         temperature = 0.5  # Set the temperature parameter for the Softmax function
         if not (piece_actions.count(no_action) == len(piece_actions)):
@@ -269,7 +270,28 @@ class QLearn:
 
 
 
-    # Update Q-table logic    
+    # Update Q-table logic
+    # def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner):
+    #     current_actions = self.determined_actions(player_pieces,enemy_pieces,dice)
+    #     current_states = self.determined_state(player_pieces, enemy_pieces, game)
+    #     piece_index = self.pick_action(current_states, current_actions)
+    #     if self.training == 1 and not(piece_index == -1):
+
+    #         reward = self.getReward(player_pieces, current_states, there_is_a_winner)
+
+    #         self.sum_of_rewards += reward
+    #         current_q_value = self.Q_table[current_states[piece_index]][current_actions[piece_index]]
+    #         last_q_value = self.Q_table[self.last_state][self.last_action]
+    #         self.Q_table[self.last_state][self.last_action] += \
+    #             self.learning_rate*(reward+self.discount_factor*current_q_value-last_q_value)
+    #         # print("REWARD",reward)
+    #         # print("SUM REWARD", self.sum_of_rewards)
+    #         # print("Q_TABLE",self.Q_table)
+    #         self.last_player_pieces = player_pieces
+    #         self.last_state = current_states[piece_index]
+    #         self.last_action = current_actions[piece_index]
+    #     return piece_index
+    
     def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner):
         current_actions = self.determined_actions(player_pieces,enemy_pieces,dice)
         current_states = self.determined_state(player_pieces, enemy_pieces, game)
@@ -293,9 +315,8 @@ class QLearn:
         data_file_path = os.path.join(folder_path, file_name)
         np.save(data_file_path, self.Q_table)
 
+
     def load_Q_table(self,file_name):
-            file_ext = file_name.split(".")[-1]
-            assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-            folder_path = "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data"
-            data_file_path = os.path.join(folder_path, file_name)
-            self.Q_table = np.load(data_file_path)
+        file_ext = file_name.split(".")[-1]
+        assert file_ext == "npy", "The file extension has to be npy (numpy file)"
+        self.Q_table = np.load(file_name)

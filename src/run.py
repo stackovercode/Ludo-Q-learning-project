@@ -46,10 +46,10 @@ def run():
     # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
 
-    after = 200
+    after = 100 # number of iterations, the Q-learning algorithm will stop updating the Q-values and will only use the learned Q-values to play the game.
 
-    number_of_runs_without_learning = 200
-    number_of_runs_with_learning = 2000
+    number_of_runs_without_learning = 100 # number of games played to test the learned Q-values, after the Q-learning algorithm has finished training.
+    number_of_runs_with_learning = 1000 # number of epochs or iterations that your Q-learning algorithm.
 
     q_player = 0
 
@@ -165,9 +165,6 @@ def run():
     #np.save(file_name, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_with_learning, number_of_runs_without_learning])
 
     return True
-
-
-
 
 
 class MyTestCase(unittest.TestCase):
