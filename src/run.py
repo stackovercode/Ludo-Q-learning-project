@@ -44,149 +44,21 @@ def plot_heatMap(q):
     fig.tight_layout()
     plt.show()
 
-
-#@timer
-def run_parallel():
-    learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
-    discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
-    explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
-
-    # determines after how many epochs the Q-learning algorithm will stop updating the Q-values and only use the learned Q-values to play the game. The value of after is set to 100 in the given code.
-    after = 100 # number of iterations, the Q-learning algorithm will stop updating the Q-values and will only use the learned Q-values to play the game.
-    
-    number_of_runs_for_training = 800 # number of games played for training the Q-values
-    number_of_runs_for_validation = 200 # number of games played to test the learned Q-values
-
-
-    q_player = 0
-
-    size_of_win_rate_vec = (len(explore_rate_vec),len(discount_factor_vec),len(learning_rate_vec), number_of_runs_for_training)
-    win_rate_vec = np.zeros(size_of_win_rate_vec)
-
-    for ER_index, ER_value in enumerate(explore_rate_vec):
-        for DF_index, DF_value in enumerate(discount_factor_vec):
-            #for LR_index, LR_value in enumerate(learning_rate_vec):
-            q = QLearning.QLearn(q_player)
-            q.training = 1
-
-            #q.learning_rate = LR_value
-            q.learning_rate = learning_rate_vec[0]
-            q.discount_factor = DF_value
-            q.explore_rate = ER_value
-
-            array_of_sum_of_rewards = []
-
-            for k in range(number_of_runs_for_training):
-                print('Test:   Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
-                g = ludopy.Game()
-                stop_while = False
-                q.training = 1
-
-                while not stop_while:
-                    (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
-                        there_is_a_winner), player_i = g.get_observation()
-
-                    if player_i == q_player:
-                        piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
-                        if there_is_a_winner == 1:
-                            stop_while = True
-                    else:
-                        if len(move_pieces):
-                            piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
-                        else:
-                            piece_to_move = -1
-
-                    _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
-
-                q.reset()
-                if after < k:
-                    wins = [0, 0, 0, 0]
-                    q.training = 0
-
-                    number_of_steps = 0
-                    for j in range(number_of_runs_for_validation):
-                        g = ludopy.Game()
-                        stop_while = False
-                        while not stop_while:
-                            (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
-                                there_is_a_winner), player_i = g.get_observation()
-                            if player_i == q_player:
-                                number_of_steps = number_of_steps + 1
-                                piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
-                                if there_is_a_winner == 1:
-                                    stop_while = True
-                            else:
-                                if len(move_pieces):
-                                    piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
-                                else:
-                                    piece_to_move = -1
-                            _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
-
-                        array_of_sum_of_rewards.append(q.sum_of_rewards)
-
-                        q.reset()
-                        wins[g.first_winner_was] = wins[g.first_winner_was] + 1
-                    win_rate_vec[ER_index][DF_index]
-                    print('Win rate: ', wins[q_player] / number_of_runs_for_validation)
-
-    size_of_win_rate_vec = (len(explore_rate_vec),len(discount_factor_vec),len(learning_rate_vec), number_of_runs_for_training)
-    win_rate_vec = np.zeros(size_of_win_rate_vec)
-
-    pool = mp.Pool(mp.cpu_count())
-
-    results = [pool.apply_async(run_parallel, args=(ER_value, DF_value, LR_value)) for ER_value in explore_rate_vec for DF_value in discount_factor_vec for LR_value in learning_rate_vec]
-
-    for r in results:
-        res = r.get()
-        # Update the win rate vector
-        win_rate_vec[res[0]][res[1]][res[2]][res[3]] = res[4]
-
-    pool.close()
-    pool.join()
-
-    # Test progress
-    plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-    plot_heatMap(q)
-    #plt.show()
-    q.save_QTable("Best_learning_parameters" + str(k) + ".npy")
-
-    # specify the folder path
-    folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
-    #test_name = "Test_run"
-    test_name = ""
-
-    # create the folder if it doesn't exist
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-
-    # save the data file to the folder
-    data_file_path = os.path.join(folder_path, test_name + "data.npy")
-    np.save(data_file_path, win_rate_vec)
-
-    # save the parameters file to the folder
-    param_file_path = os.path.join(folder_path, test_name + "parameters.npy")
-    np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation])
-
-    return True
-
-
-
 #@timer
 def run():
     #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
-    # learning_rate_vec = [0.6] # 0.1
-    # discount_factor_vec = [0.4] #0.4
-    # explore_rate_vec = [0.4] #0.05
-    learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
-    discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
-    explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
+    learning_rate_vec = [0.6] # 0.1
+    discount_factor_vec = [0.4] #0.4
+    explore_rate_vec = [0.4] #0.05
+    # learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
 
-    # determines after how many epochs the Q-learning algorithm will stop updating the Q-values and only use the learned Q-values to play the game. The value of after is set to 100 in the given code.
-    after = 100 # number of iterations, the Q-learning algorithm will stop updating the Q-values and will only use the learned Q-values to play the game.
+    # determines after how many epochs the Q-learning algorithm will stop updating the Q-values and only use the learned Q-values to play the game.
+    after = 0 
     
     number_of_runs_for_training = 800 # number of games played for training the Q-values
     number_of_runs_for_validation = 200 # number of games played to test the learned Q-values
-
 
     q_player = 0
 
@@ -290,17 +162,6 @@ def run():
     param_file_path = os.path.join(folder_path, test_name + "parameters.npy")
     np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation])
 
-
-    #file_name = test_name + "_data.npy"
-    # file_ext = file_name.split(".")[-1]
-    # assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-    #np.save(file_name, win_rate_vec)
-
-    # file_name = test_name + "_parameters.npy"
-    # file_ext = file_name.split(".")[-1]
-    # assert file_ext == "npy", "The file extension has to be npy (numpy file)"
-    #np.save(file_name, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_with_learning, number_of_runs_for_validation])
-
     return True
 
 
@@ -308,7 +169,6 @@ class MyTestCase(unittest.TestCase):
     def test_something(self):
         with tf.device('/device:GPU:0'):
             self.assertEqual(True, run())
-            #self.assertEqual(True, run_parallel())
 
 
 if __name__ == '__main__':

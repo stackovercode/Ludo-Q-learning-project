@@ -222,18 +222,30 @@ class QLearn:
 
 
 
-    # Action selection logic
+    # # Action selection logic using epsilon-greedy approach
+    # def pick_action(self, piece_states, piece_actions):
+    #     temperature = 0.5  # Set the temperature parameter for the Softmax function
+    #     if not (piece_actions.count(self.no_action) == len(piece_actions)):
+    #         valid_actions = [i for i in range(4) if piece_actions[i] != self.no_action]
+    #         q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in valid_actions])
+    #         action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
+    #         best_action_player = valid_actions[np.random.choice(np.arange(len(action_probs)), p=action_probs)]
+    #     else:
+    #         best_action_player = -1
+    #     return best_action_player
+
+
+    # Action selection logic using Boltzmann Exploration
     def pick_action(self, piece_states, piece_actions):
-        temperature = 0.5  # Set the temperature parameter for the Softmax function
+        temperature = 0.5  # Set the temperature parameter for the Boltzmann Exploration method
         if not (piece_actions.count(self.no_action) == len(piece_actions)):
             valid_actions = [i for i in range(4) if piece_actions[i] != self.no_action]
             q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in valid_actions])
             action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
-            best_action_player = valid_actions[np.random.choice(np.arange(len(action_probs)), p=action_probs)]
+            best_action_player = np.random.choice(valid_actions, p=action_probs)
         else:
             best_action_player = -1
         return best_action_player
-
 
 
     # Update Q-table logic    
@@ -258,6 +270,8 @@ class QLearn:
             #     self.training = 0  # Stop updating Q-table
             
         return piece_index
+    
+
 
     def save_QTable(self,file_name):
         folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
