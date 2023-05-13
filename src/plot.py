@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project")
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -27,7 +29,7 @@ temp_data = []
 for ER_index, ER_value in enumerate(explore_rate_vec):
 	for DF_index, DF_value in enumerate(discount_factor_vec):
 		for LR_index, LR_value in enumerate(learning_rate_vec):
-			temp_win_rate = np.sum(win_rate_vec[ER_index][DF_index][LR_index][:])/len(win_rate_vec[ER_index][DF_index][LR_index][:]) # 700 / 700
+			temp_win_rate = np.sum(win_rate_vec[ER_index][DF_index][LR_index][800:])/len(win_rate_vec[ER_index][DF_index][LR_index][800:]) # 700 / 700
 			if temp_win_rate > highest_win_rate :
 				highest_win_rate = temp_win_rate
 				temp_data = moving_average(win_rate_vec[ER_index][DF_index][LR_index],15)

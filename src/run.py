@@ -73,7 +73,7 @@ def validation_phase(q, number_of_runs_for_validation, q_player):
     array_of_sum_of_rewards = []
 
     for j in range(number_of_runs_for_validation):
-        first_winner, sum_of_rewards = play_game(q, q_player, training=True)
+        first_winner, sum_of_rewards = play_game(q, q_player, training=False)
         array_of_sum_of_rewards.append(sum_of_rewards)
         q.reset()
         wins[first_winner] = wins[first_winner] + 1
@@ -90,12 +90,12 @@ def run():
     # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
     after = 0 
-    number_of_runs_for_training = 1600
-    number_of_runs_for_validation = 400
+    number_of_runs_for_training = 800
+    number_of_runs_for_validation = 200
     q_player = 0
 
     size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training)
-    win_rate_vec = np.zeros(size_of_win_rate_vec, dtype=object)
+    win_rate_vec = np.zeros(size_of_win_rate_vec)
 
     for ER_index, ER_value in enumerate(explore_rate_vec):
         for DF_index, DF_value in enumerate(discount_factor_vec):
@@ -119,29 +119,46 @@ def run():
                 plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
                 plot_heatMap(q)
 
-                q.save_QTable("Best_learning_parameters" + str(LR_index) + ".npy")
+                q.save_QTable("Best_learning_parameters" + str(number_of_runs_for_training) + ".npy")
 
     # Save data and parameters
-    save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation)
-    
-    return True
-
-
-def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation):
+    #save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation)
     # specify the folder path
     folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
+    test_name = ""
 
     # create the folder if it doesn't exist
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
     # save the data file to the folder
-    data_file_path = os.path.join(folder_path, "data.npy")
+    data_file_path = os.path.join(folder_path, test_name + "data.npy")
     np.save(data_file_path, win_rate_vec)
 
     # save the parameters file to the folder
-    param_file_path = os.path.join(folder_path, "parameters.npy")
+    param_file_path = os.path.join(folder_path, test_name + "parameters.npy")
     np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation])
+
+    
+    
+    return True
+
+
+# def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation):
+#     # specify the folder path
+#     folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
+
+#     # create the folder if it doesn't exist
+#     if not os.path.exists(folder_path):
+#         os.makedirs(folder_path)
+
+#     # save the data file to the folder
+#     data_file_path = os.path.join(folder_path, "data.npy")
+#     np.save(data_file_path, win_rate_vec)
+
+#     # save the parameters file to the folder
+#     param_file_path = os.path.join(folder_path, "parameters.npy")
+#     np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation])
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
