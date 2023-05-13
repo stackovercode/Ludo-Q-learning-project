@@ -61,7 +61,6 @@ class QLearn:
         self.number_of_wins = 0
         self.number_of_games = 0
 
-
     def reset(self):
         self.current_state = [self.startArea] * 4
         self.last_action = None
@@ -71,46 +70,90 @@ class QLearn:
         self.number_of_games += 1
 
     # State determination logic
-    def determined_state(self, player_pieces, enemy_pieces, game):
-        state_of_pieces = [self.startArea] * self.no_gameBricks
+    # def determined_state(self, player_pieces, enemy_pieces, game):
+    #     state_of_pieces = [self.startArea] * self.no_gameBricks
         
-        for piece_index, piece_pos in enumerate(player_pieces):
-            if piece_pos == player.HOME_INDEX:
-                state_of_pieces[piece_index] = self.startArea
-            elif piece_pos in player.HOME_ARwEAL_INDEXS:
-                state_of_pieces[piece_index] = self.goalArea
-            elif piece_pos == player.GOAL_INDEX:
-                state_of_pieces[piece_index] = self.winningArea
-            elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
-                state_of_pieces[piece_index] = self.safeArea
-            else:
-                state_determined = False
-                for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
-                    if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
-                        if enemy_index not in game.ghost_players:
-                            state_of_pieces[piece_index] = self.dangerArea
-                        else:
-                            state_of_pieces[piece_index] = self.safeArea
-                        state_determined = True
-                        break
-                if not state_determined:
-                    if piece_pos in player.STAR_INDEXS:
-                        if piece_pos in player.STAR_INDEXS[1::2]:
-                            range_to_look_for_enemies = list(range(1, 7)) + list(range(8, 14))
-                        else:
-                            range_to_look_for_enemies = list(range(1, 13))
-                    else:
-                        range_to_look_for_enemies = list(range(1, 7))
+    #     for piece_index, piece_pos in enumerate(player_pieces):
+    #         if piece_pos == player.HOME_INDEX:
+    #             state_of_pieces[piece_index] = self.startArea
+    #         elif piece_pos in player.HOME_ARwEAL_INDEXS:
+    #             state_of_pieces[piece_index] = self.goalArea
+    #         elif piece_pos == player.GOAL_INDEX:
+    #             state_of_pieces[piece_index] = self.winningArea
+    #         elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
+    #             state_of_pieces[piece_index] = self.safeArea
+    #         else:
+    #             state_determined = False
+    #             for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
+    #                 if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
+    #                     if enemy_index not in game.ghost_players:
+    #                         state_of_pieces[piece_index] = self.dangerArea
+    #                     else:
+    #                         state_of_pieces[piece_index] = self.safeArea
+    #                     state_determined = True
+    #                     break
+    #             if not state_determined:
+    #                 if piece_pos in player.STAR_INDEXS:
+    #                     if piece_pos in player.STAR_INDEXS[1::2]:
+    #                         range_to_look_for_enemies = list(range(1, 7)) + list(range(8, 14))
+    #                     else:
+    #                         range_to_look_for_enemies = list(range(1, 13))
+    #                 else:
+    #                     range_to_look_for_enemies = list(range(1, 7))
                     
-                    for index in range_to_look_for_enemies:
-                        enemy_pos = (piece_pos - index) % 52
-                        enemy_at_pos, _ = player.get_enemy_at_pos(enemy_pos, enemy_pieces)
-                        if enemy_at_pos != player.NO_ENEMY:
-                            state_of_pieces[piece_index] = self.dangerArea
-                            break
-                    else:
-                        state_of_pieces[piece_index] = self.defaultArea
+    #                 for index in range_to_look_for_enemies:
+    #                     enemy_pos = (piece_pos - index) % 52
+    #                     enemy_at_pos, _ = player.get_enemy_at_pos(enemy_pos, enemy_pieces)
+    #                     if enemy_at_pos != player.NO_ENEMY:
+    #                         state_of_pieces[piece_index] = self.dangerArea
+    #                         break
+    #                 else:
+    #                     state_of_pieces[piece_index] = self.defaultArea
         
+    #     return state_of_pieces
+
+    def determine_piece_state(self, piece_pos, player_pieces, enemy_pieces, game):
+        if piece_pos == player.HOME_INDEX:
+            return self.startArea
+        elif piece_pos in player.HOME_AREA_INDEXS:
+            return self.goalArea
+        elif piece_pos == player.GOAL_INDEX:
+            return self.winningArea
+        elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
+            return self.safeArea
+        else:
+            return self.determine_other_state(piece_pos, player_pieces, enemy_pieces, game)
+
+    def determine_other_state(self, piece_pos, player_pieces, enemy_pieces, game):
+        for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
+            if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
+                if enemy_index not in game.ghost_players:
+                    return self.dangerArea
+                else:
+                    return self.safeArea
+
+        return self.check_for_enemy_in_range(piece_pos, player_pieces, enemy_pieces)
+
+    def check_for_enemy_in_range(self, piece_pos, player_pieces, enemy_pieces):
+        if piece_pos in player.STAR_INDEXS:
+            if piece_pos in player.STAR_INDEXS[1::2]:
+                range_to_look_for_enemies = list(range(1, 7)) + list(range(8, 14))
+            else:
+                range_to_look_for_enemies = list(range(1, 13))
+        else:
+            range_to_look_for_enemies = list(range(1, 7))
+
+        for index in range_to_look_for_enemies:
+            enemy_pos = (piece_pos - index) % 52
+            enemy_at_pos, _ = player.get_enemy_at_pos(enemy_pos, enemy_pieces)
+            if enemy_at_pos != player.NO_ENEMY:
+                return self.dangerArea
+
+        return self.defaultArea
+
+    def determined_state(self, player_pieces, enemy_pieces, game):
+        state_of_pieces = [self.determine_piece_state(piece_pos, player_pieces, enemy_pieces, game)
+                           for piece_pos in player_pieces]
         return state_of_pieces
 
 
@@ -192,23 +235,23 @@ class QLearn:
         if self.last_action == self.starting_action:
             reward += 0.25
         if self.last_action == self.kill_player_action:
-            reward += 0.2
+            reward += 0.9
         if self.last_action == self.die_action:
             reward += -0.2
         if self.last_action == self.default_action:
-            reward += 0.05
+            reward += 0.001
         if self.last_action == self.inside_goalArea_action:
-            reward += 0.2
+            reward += 0.4
         if self.last_action == self.enter_goalArea_action:
             reward += 0.4
         if self.last_action == self.star_action:
-            reward += 0.2
+            reward += 0.6
         if self.last_action == self.enter_winningArea_action:
             reward += 1.0
         if self.last_action == self.move_outside_safety_action:
             reward += -0.1
         if self.last_action == self.move_inside_safety_action:
-            reward += 0.1
+            reward += 0.
         if self.last_action == self.no_action:
             reward += -0.05
 
@@ -219,20 +262,6 @@ class QLearn:
                 break
 
         return reward
-
-
-
-    # # Action selection logic using epsilon-greedy approach
-    # def pick_action(self, piece_states, piece_actions):
-    #     temperature = 0.5  # Set the temperature parameter for the Softmax function
-    #     if not (piece_actions.count(self.no_action) == len(piece_actions)):
-    #         valid_actions = [i for i in range(4) if piece_actions[i] != self.no_action]
-    #         q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in valid_actions])
-    #         action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
-    #         best_action_player = valid_actions[np.random.choice(np.arange(len(action_probs)), p=action_probs)]
-    #     else:
-    #         best_action_player = -1
-    #     return best_action_player
 
 
     # Action selection logic using Boltzmann Exploration
