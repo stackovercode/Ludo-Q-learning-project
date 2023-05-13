@@ -55,6 +55,7 @@ class QLearn:
         self.sum_of_rewards = 0.0
         self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
         self.Q_table = np.zeros((self.number_States, self.number_Actions), dtype=float)
+        self.threshold = 0.001
 
 
         self.player_index = index
@@ -231,14 +232,7 @@ class QLearn:
             self.last_state = current_states[piece_index]
             self.last_action = current_actions[piece_index]
             
-            # Learning rate decay (Future work)
-            #     # Check if Q-value update is below threshold
-            # if abs(delta) < threshold:
-            #     self.training = 0  # Stop updating Q-table
-            
         return piece_index
-    
-
 
     def save_QTable(self,file_name):
         folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
