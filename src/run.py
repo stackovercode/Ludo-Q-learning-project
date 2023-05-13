@@ -60,7 +60,7 @@ def play_game(q, q_player, training=True):
 def training_phase(q, number_of_runs_for_training, q_player):
     array_of_sum_of_rewards = []
     for k in range(number_of_runs_for_training):
-        print('Test:   Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
+        print('Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
         first_winner, sum_of_rewards = play_game(q, q_player, training=True)
         array_of_sum_of_rewards.append(sum_of_rewards)
         q.reset()
@@ -73,7 +73,7 @@ def validation_phase(q, number_of_runs_for_validation, q_player):
     array_of_sum_of_rewards = []
 
     for j in range(number_of_runs_for_validation):
-        first_winner, sum_of_rewards = play_game(q, q_player, training=False)
+        first_winner, sum_of_rewards = play_game(q, q_player, training=True)
         array_of_sum_of_rewards.append(sum_of_rewards)
         q.reset()
         wins[first_winner] = wins[first_winner] + 1
@@ -82,16 +82,19 @@ def validation_phase(q, number_of_runs_for_validation, q_player):
 
 def run():
     # Parameters
-    learning_rate_vec = [0.6]
-    discount_factor_vec = [0.4]
-    explore_rate_vec = [0.4]
+ #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
+    learning_rate_vec = [0.6] # 0.1
+    discount_factor_vec = [0.4] #0.4
+    explore_rate_vec = [0.4] #0.05
+    # learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
+    # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
     after = 0 
-    number_of_runs_for_training = 200
-    number_of_runs_for_validation = 100
+    number_of_runs_for_training = 1600
+    number_of_runs_for_validation = 400
     q_player = 0
 
     size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training)
-    #win_rate_vec = np.zeros(size_of_win_rate_vec)
     win_rate_vec = np.zeros(size_of_win_rate_vec, dtype=object)
 
     for ER_index, ER_value in enumerate(explore_rate_vec):
@@ -106,14 +109,15 @@ def run():
 
                 array_of_sum_of_rewards = training_phase(q, number_of_runs_for_training, q_player)
                 wins, array_of_sum_of_rewards_validation = validation_phase(q, number_of_runs_for_validation, q_player)
+                
 
                 win_rate = (wins[q_player] / number_of_runs_for_validation)
                 print('Win rate: ', win_rate)
                 win_rate_vec[ER_index][DF_index][LR_index] = win_rate
 
                 # Test progress
-                #plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-                #plot_heatMap(q)
+                plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+                plot_heatMap(q)
 
                 q.save_QTable("Best_learning_parameters" + str(LR_index) + ".npy")
 
