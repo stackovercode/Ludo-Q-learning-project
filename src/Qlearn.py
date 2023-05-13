@@ -69,62 +69,20 @@ class QLearn:
         self.sum_of_rewards = 0.0
         self.number_of_games += 1
 
-    # State determination logic
-    # def determined_state(self, player_pieces, enemy_pieces, game):
-    #     state_of_pieces = [self.startArea] * self.no_gameBricks
-        
-    #     for piece_index, piece_pos in enumerate(player_pieces):
-    #         if piece_pos == player.HOME_INDEX:
-    #             state_of_pieces[piece_index] = self.startArea
-    #         elif piece_pos in player.HOME_ARwEAL_INDEXS:
-    #             state_of_pieces[piece_index] = self.goalArea
-    #         elif piece_pos == player.GOAL_INDEX:
-    #             state_of_pieces[piece_index] = self.winningArea
-    #         elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
-    #             state_of_pieces[piece_index] = self.safeArea
-    #         else:
-    #             state_determined = False
-    #             for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
-    #                 if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
-    #                     if enemy_index not in game.ghost_players:
-    #                         state_of_pieces[piece_index] = self.dangerArea
-    #                     else:
-    #                         state_of_pieces[piece_index] = self.safeArea
-    #                     state_determined = True
-    #                     break
-    #             if not state_determined:
-    #                 if piece_pos in player.STAR_INDEXS:
-    #                     if piece_pos in player.STAR_INDEXS[1::2]:
-    #                         range_to_look_for_enemies = list(range(1, 7)) + list(range(8, 14))
-    #                     else:
-    #                         range_to_look_for_enemies = list(range(1, 13))
-    #                 else:
-    #                     range_to_look_for_enemies = list(range(1, 7))
-                    
-    #                 for index in range_to_look_for_enemies:
-    #                     enemy_pos = (piece_pos - index) % 52
-    #                     enemy_at_pos, _ = player.get_enemy_at_pos(enemy_pos, enemy_pieces)
-    #                     if enemy_at_pos != player.NO_ENEMY:
-    #                         state_of_pieces[piece_index] = self.dangerArea
-    #                         break
-    #                 else:
-    #                     state_of_pieces[piece_index] = self.defaultArea
-        
-    #     return state_of_pieces
-
-    def determine_piece_state(self, piece_pos, player_pieces, enemy_pieces, game):
+    # State logic
+    def piece_state(self, piece_pos, player_pieces, enemy_pieces, game):
         if piece_pos == player.HOME_INDEX:
             return self.startArea
-        elif piece_pos in player.HOME_AREA_INDEXS:
+        elif piece_pos in player.HOME_AREAL_INDEXS:
             return self.goalArea
         elif piece_pos == player.GOAL_INDEX:
             return self.winningArea
         elif piece_pos in player.GLOB_INDEXS or count(player_pieces, piece_pos) > 1:
             return self.safeArea
         else:
-            return self.determine_other_state(piece_pos, player_pieces, enemy_pieces, game)
+            return self.other_state(piece_pos, player_pieces, enemy_pieces, game)
 
-    def determine_other_state(self, piece_pos, player_pieces, enemy_pieces, game):
+    def other_state(self, piece_pos, player_pieces, enemy_pieces, game):
         for enemy_index, enemy_glob in enumerate(player.LIST_ENEMY_GLOB_INDEX1):
             if piece_pos == enemy_glob and player.HOME_INDEX in enemy_pieces[enemy_index]:
                 if enemy_index not in game.ghost_players:
@@ -132,9 +90,9 @@ class QLearn:
                 else:
                     return self.safeArea
 
-        return self.check_for_enemy_in_range(piece_pos, player_pieces, enemy_pieces)
+        return self.validate_enemy_in_range(piece_pos, player_pieces, enemy_pieces)
 
-    def check_for_enemy_in_range(self, piece_pos, player_pieces, enemy_pieces):
+    def validate_enemy_in_range(self, piece_pos, player_pieces, enemy_pieces):
         if piece_pos in player.STAR_INDEXS:
             if piece_pos in player.STAR_INDEXS[1::2]:
                 range_to_look_for_enemies = list(range(1, 7)) + list(range(8, 14))
@@ -151,14 +109,14 @@ class QLearn:
 
         return self.defaultArea
 
-    def determined_state(self, player_pieces, enemy_pieces, game):
-        state_of_pieces = [self.determine_piece_state(piece_pos, player_pieces, enemy_pieces, game)
+    def states_logic(self, player_pieces, enemy_pieces, game):
+        state_of_pieces = [self.piece_state(piece_pos, player_pieces, enemy_pieces, game)
                            for piece_pos in player_pieces]
         return state_of_pieces
 
 
-    # Possible action determination logic
-    def determined_actions(self, player_pieces, enemy_pieces, dice):
+    # Action logic
+    def actions_logic(self, player_pieces, enemy_pieces, dice):
         possible_actions = []
         for piece_index, old_piece_pos in enumerate(player_pieces):
             new_piece_pos = old_piece_pos + dice
@@ -167,22 +125,18 @@ class QLearn:
             if old_piece_pos == player.GOAL_INDEX or (old_piece_pos == player.HOME_INDEX and dice < 6):
                 possible_actions.append(self.no_action)
                 continue
-
             # Move out of home
             if old_piece_pos == player.HOME_INDEX and dice == 6:
                 possible_actions.append(self.starting_action)
                 continue
-
             # Use a star to jump
             if new_piece_pos in player.STAR_INDEXS:
                 possible_actions.append(self.star_action)
                 continue
-
             # Enter goal
             if new_piece_pos == player.GOAL_INDEX or new_piece_pos == player.STAR_AT_GOAL_AREAL_INDX:
                 possible_actions.append(self.enter_winningArea_action)
                 continue
-
             # Globe not owned
             if new_piece_pos in player.GLOB_INDEXS:
                 enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
@@ -191,12 +145,10 @@ class QLearn:
                 else:
                     possible_actions.append(self.move_inside_safety_action)
                 continue
-
             # Piece on a globe or stacked on top of another piece
             if count(player_pieces, new_piece_pos) > 0 or old_piece_pos in player.GLOB_INDEXS or count(player_pieces, old_piece_pos) > 1:
                 possible_actions.append(self.move_inside_safety_action)
                 continue
-
             # Globe owned by an enemy
             if new_piece_pos in player.LIST_ENEMY_GLOB_INDEX1:
                 globs_enemy = player.LIST_TAILE_ENEMY_GLOBS.index(player.BORD_TILES[new_piece_pos])
@@ -279,8 +231,8 @@ class QLearn:
 
     # Update Q-table logic    
     def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner):
-        current_actions = self.determined_actions(player_pieces,enemy_pieces,dice)
-        current_states = self.determined_state(player_pieces, enemy_pieces, game)
+        current_actions = self.actions_logic(player_pieces,enemy_pieces,dice)
+        current_states = self.states_logic(player_pieces, enemy_pieces, game)
         piece_index = self.pick_action(current_states, current_actions)
         if self.training == 1 and piece_index is not None:
             reward = self.reward(player_pieces, current_states, there_is_a_winner)
