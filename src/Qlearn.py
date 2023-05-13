@@ -118,68 +118,54 @@ class QLearn:
     # Action logic
     def actions_logic(self, player_pieces, enemy_pieces, dice):
         possible_actions = []
+        
         for piece_index, old_piece_pos in enumerate(player_pieces):
             new_piece_pos = old_piece_pos + dice
-
-            # Piece at goal
+            enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
+            # Piece at goal   
             if old_piece_pos == player.GOAL_INDEX or (old_piece_pos == player.HOME_INDEX and dice < 6):
                 possible_actions.append(self.no_action)
-                continue
             # Move out of home
-            if old_piece_pos == player.HOME_INDEX and dice == 6:
+            elif old_piece_pos == player.HOME_INDEX and dice == 6:
                 possible_actions.append(self.starting_action)
-                continue
             # Use a star to jump
-            if new_piece_pos in player.STAR_INDEXS:
+            elif new_piece_pos in player.STAR_INDEXS:
                 possible_actions.append(self.star_action)
-                continue
             # Enter goal
-            if new_piece_pos == player.GOAL_INDEX or new_piece_pos == player.STAR_AT_GOAL_AREAL_INDX:
+            elif new_piece_pos == player.GOAL_INDEX or new_piece_pos == player.STAR_AT_GOAL_AREAL_INDX:
                 possible_actions.append(self.enter_winningArea_action)
-                continue
             # Globe not owned
-            if new_piece_pos in player.GLOB_INDEXS:
-                enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
-                if enemy_at_pos != player.NO_ENEMY:
-                    possible_actions.append(self.die_action)
-                else:
-                    possible_actions.append(self.move_inside_safety_action)
-                continue
-            # Piece on a globe or stacked on top of another piece
-            if count(player_pieces, new_piece_pos) > 0 or old_piece_pos in player.GLOB_INDEXS or count(player_pieces, old_piece_pos) > 1:
+            elif new_piece_pos in player.GLOB_INDEXS and enemy_at_pos == player.NO_ENEMY:
                 possible_actions.append(self.move_inside_safety_action)
-                continue
-            # Globe owned by an enemy
-            if new_piece_pos in player.LIST_ENEMY_GLOB_INDEX1:
+            elif new_piece_pos in player.GLOB_INDEXS and enemy_at_pos != player.NO_ENEMY:
+                possible_actions.append(self.die_action)
+            # Piece on a globe ontop of another piece
+            elif (count(player_pieces, new_piece_pos) > 0 or old_piece_pos in player.GLOB_INDEXS or 
+                count(player_pieces, old_piece_pos) > 1):
+                possible_actions.append(self.move_inside_safety_action)
+            # Globe owned by an enemy 
+            elif new_piece_pos in player.LIST_ENEMY_GLOB_INDEX1 and enemy_at_pos == player.NO_ENEMY:
+                possible_actions.append(self.move_inside_safety_action)
+            elif new_piece_pos in player.LIST_ENEMY_GLOB_INDEX1 and enemy_at_pos != player.NO_ENEMY:
                 globs_enemy = player.LIST_TAILE_ENEMY_GLOBS.index(player.BORD_TILES[new_piece_pos])
-                enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
-                if enemy_at_pos != player.NO_ENEMY:
-                    if enemy_at_pos != globs_enemy:
-                        possible_actions.append(self.kill_player_action)
-                    else:
-                        possible_actions.append(self.die_action)
-                else:
-                    possible_actions.append(self.move_inside_safety_action)
-                continue
-
-            # Enemy at position
-            enemy_at_pos, enemy_pieces_at_pos = player.get_enemy_at_pos(new_piece_pos, enemy_pieces)
-            if enemy_at_pos != player.NO_ENEMY:
-                if len(enemy_pieces_at_pos) == 1:
+                if enemy_at_pos != globs_enemy:
                     possible_actions.append(self.kill_player_action)
                 else:
                     possible_actions.append(self.die_action)
-                continue
-
+             # Enemy at position
+            elif enemy_at_pos != player.NO_ENEMY and len(enemy_pieces_at_pos) == 1:
+                possible_actions.append(self.kill_player_action)
+            elif enemy_at_pos != player.NO_ENEMY and len(enemy_pieces_at_pos) > 1:
+                possible_actions.append(self.die_action)
             # Enter goal area
-            if old_piece_pos < 53 and new_piece_pos > 52:
+            elif old_piece_pos < 53 and new_piece_pos > 52:
                 possible_actions.append(self.enter_goalArea_action)
-                continue
-
             # Move outside safety
-            possible_actions.append(self.move_outside_safety_action)
+            else:
+                possible_actions.append(self.move_outside_safety_action)
 
         return possible_actions
+
 
     def reward(self, player_pieces, current_states, there_is_a_winner):
         reward = 0.0
