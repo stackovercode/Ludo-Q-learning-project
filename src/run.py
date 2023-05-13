@@ -7,7 +7,6 @@ import unittest
 import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import multiprocessing as mp
 import time
 
 device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
@@ -82,7 +81,6 @@ def run():
                     g = ludopy.Game()
                     stop_while = False
                     q.training = 1
-                    #number_of_wins_W = 0
 
                     while not stop_while:
                         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
@@ -92,7 +90,6 @@ def run():
                             piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                             if there_is_a_winner == 1:
                                 stop_while = True
-                                #number_of_wins_W += 1
                         else:
                             if len(move_pieces):
                                 piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
@@ -105,7 +102,6 @@ def run():
                     if after < k:
                         wins = [0, 0, 0, 0]
                         q.training = 0
-                        #number_of_wins_WO = 0
 
                         number_of_steps = 0
                         for j in range(number_of_runs_for_validation):
@@ -119,7 +115,6 @@ def run():
                                     piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
                                     if there_is_a_winner == 1:
                                         stop_while = True
-                                        #number_of_wins_WO += 1
                                 else:
                                     if len(move_pieces):
                                         piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
@@ -147,7 +142,6 @@ def run():
 
     # specify the folder path
     folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
-    #test_name = "Test_run"
     test_name = ""
 
     # create the folder if it doesn't exist

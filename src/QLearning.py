@@ -49,9 +49,9 @@ class QLearn:
         self.no_action = 10
 
     def initializeParameters(self, index):
-        self.learning_rate = 0.7  # alpha
-        self.discount_factor = 0.4  # gama pre 0.01
-        self.explore_rate = 0.4  # epsilon
+        self.learning_rate = 0.7 
+        self.discount_factor = 0.4
+        self.explore_rate = 0.4
         self.sum_of_rewards = 0.0
         self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
         self.Q_table = np.zeros((self.number_States, self.number_Actions), dtype=float)
@@ -77,7 +77,7 @@ class QLearn:
         for piece_index, piece_pos in enumerate(player_pieces):
             if piece_pos == player.HOME_INDEX:
                 state_of_pieces[piece_index] = self.startArea
-            elif piece_pos in player.HOME_AREAL_INDEXS:
+            elif piece_pos in player.HOME_ARwEAL_INDEXS:
                 state_of_pieces[piece_index] = self.goalArea
             elif piece_pos == player.GOAL_INDEX:
                 state_of_pieces[piece_index] = self.winningArea
@@ -186,23 +186,23 @@ class QLearn:
 
         return possible_actions
 
-    def getReward(self, player_pieces, current_states, there_is_a_winner):
+    def reward(self, player_pieces, current_states, there_is_a_winner):
         reward = 0.0
 
         if self.last_action == self.starting_action:
-            reward += 0.1
+            reward += 0.25
         if self.last_action == self.kill_player_action:
             reward += 0.2
         if self.last_action == self.die_action:
-            reward += -0.1
+            reward += -0.2
         if self.last_action == self.default_action:
             reward += 0.05
         if self.last_action == self.inside_goalArea_action:
             reward += 0.2
         if self.last_action == self.enter_goalArea_action:
-            reward += 0.5
+            reward += 0.4
         if self.last_action == self.star_action:
-            reward += 0.15
+            reward += 0.2
         if self.last_action == self.enter_winningArea_action:
             reward += 1.0
         if self.last_action == self.move_outside_safety_action:
@@ -254,7 +254,7 @@ class QLearn:
         current_states = self.determined_state(player_pieces, enemy_pieces, game)
         piece_index = self.pick_action(current_states, current_actions)
         if self.training == 1 and piece_index is not None:
-            reward = self.getReward(player_pieces, current_states, there_is_a_winner)
+            reward = self.reward(player_pieces, current_states, there_is_a_winner)
             self.sum_of_rewards += reward
             current_q_value = self.Q_table[current_states[piece_index]][current_actions[piece_index]]
             last_q_value = self.Q_table[self.last_state][self.last_action]
