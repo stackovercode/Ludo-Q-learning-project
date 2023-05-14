@@ -133,7 +133,7 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
     win_rate_list = [0]*after
 
     for j in range(number_of_runs_for_validation):
-        #print('Number of validated games: ', j)
+        print('Number of validated games: ', j)
         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=False, current_game = j + after, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
@@ -147,15 +147,22 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
 def run(update_each_game = True):
     # Parameters
  #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
-    learning_rate_vec = [0.6] # 0.1
-    discount_factor_vec = [0.4] #0.4
-    explore_rate_vec = [0.4] #0.05
+    #best_index = [ER_value, DF_value, LR_value]
+    learning_rate_vec = [0.2]
+    discount_factor_vec = [0.5]
+    explore_rate_vec = [0.3] 
+    # learning_rate_vec = [0.6] # 0.1
+    # discount_factor_vec = [0.4] #0.4
+    # explore_rate_vec = [0.4] #0.05
     # learning_rate_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # discount_factor_vec = [0.1, 0.2, 0.3, 0.4, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.2]
     # learning_rate_vec = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4]
     # discount_factor_vec = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
     # explore_rate_vec = [0.05, 0.10, 0.15, 0.20, 0.25, 0.3]
+    # learning_rate_vec = [0.15, 0.2, 0.25, 0.3, 0.4]
+    # discount_factor_vec = [0.3, 0.35, 0.4, 0.45, 0.5]
+    # explore_rate_vec = [0.10, 0.15, 0.20, 0.25, 0.3]
     after = 200
     number_of_runs_for_training = 1600
     number_of_runs_for_validation = 400
@@ -166,7 +173,8 @@ def run(update_each_game = True):
     # win_rate_vec = np.zeros(size_of_win_rate_vec)
     
     # Set for training & validation
-    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation)
+    #size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation)
+    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + 2 * after)
     win_rate_vec = np.zeros(size_of_win_rate_vec)
 
 
@@ -184,23 +192,23 @@ def run(update_each_game = True):
                 wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation_phase(q, number_of_runs_for_validation, q_player, after=after)
 
 
-                # win_rate = (wins[q_player] / number_of_runs_for_validation)
-                # print('Win rate: ', win_rate)
-                # win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
-                # results = win_rate_vec[ER_index][DF_index][LR_index]
-                # #win_rate_vec[ER_index][DF_index][LR_index] = (np.mean(win_rate_list) + np.mean(win_rate_list_validation)) / 2
-                # win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
+                win_rate = (wins[q_player] / number_of_runs_for_validation)
+                print('Win rate: ', win_rate)
+                win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
+                results = win_rate_vec[ER_index][DF_index][LR_index]
+                #win_rate_vec[ER_index][DF_index][LR_index] = (np.mean(win_rate_list) + np.mean(win_rate_list_validation)) / 2
+                win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
 
-                if update_each_game:
-                    # Append the win rate of validation games to the list of win rates from training games
-                    win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
-                    results = win_rate_vec[ER_index][DF_index][LR_index]
-                    # Calculate the cumulative win rate after each game
-                    win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
-                else:
-                    # If not updating after each game, calculate the win rate after a set of games (validation phase)
-                    win_rate = (wins[q_player] / number_of_runs_for_validation)
-                    win_rate_vec[ER_index][DF_index][LR_index] = win_rate
+                # if update_each_game:
+                #     # Append the win rate of validation games to the list of win rates from training games
+                #     win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
+                #     results = win_rate_vec[ER_index][DF_index][LR_index]
+                #     # Calculate the cumulative win rate after each game
+                #     win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
+                # else:
+                #     # If not updating after each game, calculate the win rate after a set of games (validation phase)
+                #     win_rate = (wins[q_player] / number_of_runs_for_validation)
+                #     win_rate_vec[ER_index][DF_index][LR_index] = win_rate
                 
                 # Test progress
                 #plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
