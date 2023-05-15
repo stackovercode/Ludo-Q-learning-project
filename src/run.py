@@ -129,8 +129,8 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
     wins = [0, 0, 0, 0]
     q.training = 0
     array_of_sum_of_rewards = []
-    #win_rate_list = []
-    win_rate_list = [0]*after
+    win_rate_list = []
+    #win_rate_list = [0]*after
 
     for j in range(number_of_runs_for_validation):
         print('Number of validated games: ', j)
@@ -164,8 +164,8 @@ def run(update_each_game = True):
     # discount_factor_vec = [0.3, 0.35, 0.4, 0.45, 0.5]
     # explore_rate_vec = [0.10, 0.15, 0.20, 0.25, 0.3]
     after = 200
-    number_of_runs_for_training = 1600
-    number_of_runs_for_validation = 400
+    number_of_runs_for_training = 4800
+    number_of_runs_for_validation = 1200
     q_player = 0
 
     # Set for traning
@@ -173,8 +173,10 @@ def run(update_each_game = True):
     # win_rate_vec = np.zeros(size_of_win_rate_vec)
     
     # Set for training & validation
-    #size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation)
-    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + 2 * after)
+    #size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + 2 * after)
+    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + after)
+   
+    
     win_rate_vec = np.zeros(size_of_win_rate_vec)
 
 
