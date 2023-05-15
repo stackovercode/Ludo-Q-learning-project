@@ -11,6 +11,13 @@ def moving_average(list, N):
             moving_aves.append(moving_ave)
     return moving_aves
 
+def exponential_moving_average(list, alpha):
+    ema = [list[0]]  # starts from the first data point
+    for i in range(1, len(list)):
+        ema.append(alpha * list[i] + (1 - alpha) * ema[i-1])
+    return ema
+
+
 parameters_1 = np.load('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data/parameters.npy', allow_pickle=True)
 win_rate_vec = np.load('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data/data.npy')
 
@@ -30,7 +37,8 @@ for ER_index, ER_value in enumerate(explore_rate_vec):
             temp_win_rate = np.sum(win_rate_vec[ER_index][DF_index][LR_index]) / len(win_rate_vec[ER_index][DF_index][LR_index])
             if temp_win_rate > highest_win_rate :
                 highest_win_rate = temp_win_rate
-                temp_data = moving_average(win_rate_vec[ER_index][DF_index][LR_index], 15)
+                #temp_data = moving_average(win_rate_vec[ER_index][DF_index][LR_index], 15)
+                temp_data = exponential_moving_average(win_rate_vec[ER_index][DF_index][LR_index], 0.5)
                 best_data = win_rate_vec[ER_index][DF_index][LR_index]
                 best_index = [ER_value, DF_value, LR_value]
 

@@ -56,7 +56,7 @@ class QLearn:
         self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
         self.Q_table = np.zeros((self.number_States, self.number_Actions), dtype=float)
         self.threshold = 0.001
-
+        self.BoltzmannTemperature = 0.5
 
         self.player_index = index
         self.number_of_wins = 0
@@ -204,12 +204,12 @@ class QLearn:
 
 
     # Action selection logic using Boltzmann Exploration
-    def pick_action(self, piece_states, piece_actions):
-        temperature = 0.5  # Set the temperature parameter for the Boltzmann Exploration method
+    def pick_action(self, piece_states, piece_actions, BoltzmannTemperature):
+        #BoltzmannTemperature = 0.5  # Temperature parameter for Boltzmann Exploration
         if not (piece_actions.count(self.no_action) == len(piece_actions)):
             valid_actions = [i for i in range(4) if piece_actions[i] != self.no_action]
             q_values = np.array([self.Q_table[piece_states[i]][piece_actions[i]] for i in valid_actions])
-            action_probs = np.exp(q_values / temperature) / np.sum(np.exp(q_values / temperature))
+            action_probs = np.exp(q_values / BoltzmannTemperature) / np.sum(np.exp(q_values / BoltzmannTemperature))
             best_action_player = np.random.choice(valid_actions, p=action_probs)
         else:
             best_action_player = -1
@@ -217,10 +217,10 @@ class QLearn:
 
 
     # Update Q-table logic    
-    def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner):
+    def updateQTable(self, player_pieces, enemy_pieces, dice, game, there_is_a_winner, BoltzmannTemperature):
         current_actions = self.actions_logic(player_pieces,enemy_pieces,dice)
         current_states = self.states_logic(player_pieces, enemy_pieces, game)
-        piece_index = self.pick_action(current_states, current_actions)
+        piece_index = self.pick_action(current_states, current_actions, BoltzmannTemperature)
         if self.training == 1 and piece_index is not None:
             reward = self.reward(player_pieces, current_states, there_is_a_winner)
             self.sum_of_rewards += reward

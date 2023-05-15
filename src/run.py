@@ -11,6 +11,7 @@ import time
 
 device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
+BoltzmannTemperature = 0.1
 
 def plot_heatMap(q):
     state_labels = ["start", "goal", "winning", "danger", "safe", "default"]
@@ -34,42 +35,20 @@ def plot_heatMap(q):
     fig.tight_layout()
     plt.show()
 
-# def play_game(q, q_player, training=True):
-#     g = ludopy.Game()
-#     stop_while = False
-#     q.training = 1 if training else 0
-#     win_rate = 0
 
-#     while not stop_while:
-#         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
-#         there_is_a_winner), player_i = g.get_observation()
-
-#         if player_i == q_player:
-#             piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner)
-#             if there_is_a_winner == 1:
-#                 stop_while = True
-#                 win_rate = 1 if player_is_a_winner else 0
-#         else:
-#             if len(move_pieces):
-#                 piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
-#             else:
-#                 piece_to_move = -1
-
-#         _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
-
-#     return g.first_winner_was, q.sum_of_rewards, win_rate
 def play_game(q, q_player, training=True, current_game=0, after=0):
     g = ludopy.Game()
     stop_while = False
     q.training = 1 if training and current_game > after else 0
     win_rate = 0
+    
 
     while not stop_while:
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
         there_is_a_winner), player_i = g.get_observation()
 
         if player_i == q_player:
-            piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
+            piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner, BoltzmannTemperature) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
             if there_is_a_winner == 1:
                 stop_while = True
                 win_rate = 1 if player_is_a_winner else 0
@@ -83,34 +62,6 @@ def play_game(q, q_player, training=True, current_game=0, after=0):
 
     return g.first_winner_was, q.sum_of_rewards, win_rate
 
-
-
-# def training_phase(q, number_of_runs_for_training, q_player):
-#     array_of_sum_of_rewards = []
-#     win_rate_list = []
-#     for k in range(number_of_runs_for_training):
-#         print('Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
-#         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=True)
-#         array_of_sum_of_rewards.append(sum_of_rewards)
-#         win_rate_list.append(win_rate)
-#         q.reset()
-
-#     return array_of_sum_of_rewards, win_rate_list
-
-# def validation_phase(q, number_of_runs_for_validation, q_player):
-#     wins = [0, 0, 0, 0]
-#     q.training = 0
-#     array_of_sum_of_rewards = []
-#     win_rate_list = []
-
-#     for j in range(number_of_runs_for_validation):
-#         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=False)
-#         array_of_sum_of_rewards.append(sum_of_rewards)
-#         win_rate_list.append(win_rate)
-#         q.reset()
-#         wins[first_winner] = wins[first_winner] + 1
-
-#     return wins, array_of_sum_of_rewards, win_rate_list
 
 def training_phase(q, number_of_runs_for_training, q_player, after=0):
     array_of_sum_of_rewards = []
@@ -163,9 +114,12 @@ def run(update_each_game = True):
     # learning_rate_vec = [0.15, 0.2, 0.25, 0.3, 0.4]
     # discount_factor_vec = [0.3, 0.35, 0.4, 0.45, 0.5]
     # explore_rate_vec = [0.10, 0.15, 0.20, 0.25, 0.3]
-    after = 200
-    number_of_runs_for_training = 4800
-    number_of_runs_for_validation = 1200
+    # after = 1000
+    # number_of_runs_for_training = 4800
+    # number_of_runs_for_validation = 1200
+    after = 1
+    number_of_runs_for_training = 100
+    number_of_runs_for_validation = 20
     q_player = 0
 
     # Set for traning
@@ -178,7 +132,6 @@ def run(update_each_game = True):
    
     
     win_rate_vec = np.zeros(size_of_win_rate_vec)
-
 
     for ER_index, ER_value in enumerate(explore_rate_vec):
         for DF_index, DF_value in enumerate(discount_factor_vec):
@@ -196,9 +149,11 @@ def run(update_each_game = True):
 
                 win_rate = (wins[q_player] / number_of_runs_for_validation)
                 print('Win rate: ', win_rate)
+                # Append the win rate of validation games to the list of win rates from training games
                 win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
                 results = win_rate_vec[ER_index][DF_index][LR_index]
                 #win_rate_vec[ER_index][DF_index][LR_index] = (np.mean(win_rate_list) + np.mean(win_rate_list_validation)) / 2
+                # Calculate the cumulative win rate after each game
                 win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
 
                 # if update_each_game:
@@ -213,8 +168,8 @@ def run(update_each_game = True):
                 #     win_rate_vec[ER_index][DF_index][LR_index] = win_rate
                 
                 # Test progress
-                #plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-                #plot_heatMap(q)
+                # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+                # plot_heatMap(q)
 
                 q.save_QTable("Best_learning_parameters" + str(number_of_runs_for_training) + ".npy")
 
