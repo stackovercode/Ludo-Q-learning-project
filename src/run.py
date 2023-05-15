@@ -13,6 +13,12 @@ device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
 BoltzmannTemperature = 0.1
 
+def show_progress(label,full, prog):
+    #print(label,":","\n")
+    sys.stdout.write("\r{0}%  [{1}{2}]".format(prog, "█"*full, " "*(15-full)))
+    sys.stdout.flush()
+
+
 def plot_heatMap(q):
     state_labels = ["start", "goal", "winning", "danger", "safe", "default"]
     action_labels = ["Starting", "Default", "Inside_goal", "Enter_goal", "Enter_winning", "Star", "Move_safety", "Move_away_safety", "Kill_enemy", "Die_action", "No_action"]
@@ -59,6 +65,7 @@ def play_game(q, q_player, training=True, current_game=0, after=0):
                 piece_to_move = -1
 
         _, _, _, _, _, there_is_a_winner = g.answer_observation(piece_to_move)
+        
 
     return g.first_winner_was, q.sum_of_rewards, win_rate
 
@@ -67,13 +74,20 @@ def training_phase(q, number_of_runs_for_training, q_player, after=0):
     array_of_sum_of_rewards = []
     #win_rate_list = []
     win_rate_list = [0]*after
+    print('training_phase: ', ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate, "\n")
     for k in range(number_of_runs_for_training):
-        print('Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
+        #print('Number of learning games: ', k, ' ER: ', q.explore_rate, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate)
         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=True, current_game=k, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
+        
+        # Show the progress bar
+        progress = int(((k + 1) / number_of_runs_for_training) * 15)  # Calculate the progress as a percentage of the total games
+        show_progress("training_phase",progress, int(((k + 1) / number_of_runs_for_training) * 100))  # Call the function to show the progress bar
 
+
+    print("\n")
     return array_of_sum_of_rewards, win_rate_list
 
 def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
@@ -82,20 +96,24 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
     array_of_sum_of_rewards = []
     win_rate_list = []
     #win_rate_list = [0]*after
-
+    print("validation_phase: ","\n")
     for j in range(number_of_runs_for_validation):
-        print('Number of validated games: ', j)
+        #print('Number of validated games: ', j)
         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=False, current_game = j + after, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
         wins[first_winner] = wins[first_winner] + 1
 
+        progress = int(((j + 1) / number_of_runs_for_validation) * 15)  # Calculate the progress as a percentage of the total games
+        show_progress("validation_phase", progress, int(((j + 1) / number_of_runs_for_validation) * 100))  # Call the function to show the progress bar
+        
+    print("\n")
     return wins, array_of_sum_of_rewards, win_rate_list
 
 
 
-def run(update_each_game = True):
+def run():
     # Parameters
  #  Explore rate: 0.05, discount rate: 0.4 and learning rate: 0.1
     #best_index = [ER_value, DF_value, LR_value]
@@ -114,12 +132,9 @@ def run(update_each_game = True):
     # learning_rate_vec = [0.15, 0.2, 0.25, 0.3, 0.4]
     # discount_factor_vec = [0.3, 0.35, 0.4, 0.45, 0.5]
     # explore_rate_vec = [0.10, 0.15, 0.20, 0.25, 0.3]
-    # after = 1000
-    # number_of_runs_for_training = 4800
-    # number_of_runs_for_validation = 1200
-    after = 1
-    number_of_runs_for_training = 100
-    number_of_runs_for_validation = 20
+    after = 100
+    number_of_runs_for_training = 4800
+    number_of_runs_for_validation = 1200
     q_player = 0
 
     # Set for traning
@@ -128,16 +143,19 @@ def run(update_each_game = True):
     
     # Set for training & validation
     #size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + 2 * after)
-    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + after)
-   
-    
+    size_of_win_rate_vec = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + after) 
     win_rate_vec = np.zeros(size_of_win_rate_vec)
+    
+    size_of_win_rate_vec2 = (len(explore_rate_vec), len(discount_factor_vec), len(learning_rate_vec), number_of_runs_for_training + number_of_runs_for_validation + after)
+    games_wins = np.zeros(size_of_win_rate_vec2)
 
     for ER_index, ER_value in enumerate(explore_rate_vec):
         for DF_index, DF_value in enumerate(discount_factor_vec):
             for LR_index, LR_value in enumerate(learning_rate_vec):
                 q = Qlearn.QLearn(q_player)
                 q.training = 1
+                
+                actions_per_game = q.actions_per_game
 
                 q.learning_rate = LR_value
                 q.discount_factor = DF_value
@@ -147,26 +165,19 @@ def run(update_each_game = True):
                 wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation_phase(q, number_of_runs_for_validation, q_player, after=after)
 
 
+
                 win_rate = (wins[q_player] / number_of_runs_for_validation)
-                print('Win rate: ', win_rate)
+                print('Win rate: ', win_rate, "\n")
+                #print("\n")
                 # Append the win rate of validation games to the list of win rates from training games
                 win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
                 results = win_rate_vec[ER_index][DF_index][LR_index]
-                #win_rate_vec[ER_index][DF_index][LR_index] = (np.mean(win_rate_list) + np.mean(win_rate_list_validation)) / 2
                 # Calculate the cumulative win rate after each game
                 win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
-
-                # if update_each_game:
-                #     # Append the win rate of validation games to the list of win rates from training games
-                #     win_rate_vec[ER_index][DF_index][LR_index] = win_rate_list + win_rate_list_validation
-                #     results = win_rate_vec[ER_index][DF_index][LR_index]
-                #     # Calculate the cumulative win rate after each game
-                #     win_rate_vec[ER_index][DF_index][LR_index] = np.cumsum(results) / (np.arange(len(results)) + 1)
-                # else:
-                #     # If not updating after each game, calculate the win rate after a set of games (validation phase)
-                #     win_rate = (wins[q_player] / number_of_runs_for_validation)
-                #     win_rate_vec[ER_index][DF_index][LR_index] = win_rate
                 
+                #games_wins[ER_index][DF_index][LR_index] = (np.mean(win_rate_list) + np.mean(win_rate_list_validation)) / 2
+                
+                games_wins[ER_index][DF_index][LR_index] = win_rate_list
                 # Test progress
                 # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
                 # plot_heatMap(q)
@@ -174,26 +185,11 @@ def run(update_each_game = True):
                 q.save_QTable("Best_learning_parameters" + str(number_of_runs_for_training) + ".npy")
 
     # Save data and parameters
-    save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation)
-    # # specify the folder path
-    # folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
-    # test_name = ""
-
-    # # create the folder if it doesn't exist
-    # if not os.path.exists(folder_path):
-    #     os.makedirs(folder_path)
-
-    # # save the data file to the folder
-    # data_file_path = os.path.join(folder_path, test_name + "data.npy")
-    # np.save(data_file_path, win_rate_vec)
-
-    # # save the parameters file to the folder
-    # param_file_path = os.path.join(folder_path, test_name + "parameters.npy")
-    # np.save(param_file_path, [explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation])
-
+    save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation, actions_per_game, games_wins)
+    
     return True
 
-def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation):
+def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation, actions_per_game, games_wins):
     # specify the folder path
     folder_path = os.path.join(os.getcwd(), "/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/data")
 
@@ -203,7 +199,7 @@ def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec
 
     # save the data file to the folder
     data_file_path = os.path.join(folder_path, "data.npy")
-    np.save(data_file_path, win_rate_vec)
+    np.save(data_file_path, [win_rate_vec, actions_per_game, games_wins])
 
     # save the parameters file to the folder
     param_file_path = os.path.join(folder_path, "parameters.npy")

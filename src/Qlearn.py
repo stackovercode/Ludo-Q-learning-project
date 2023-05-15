@@ -61,6 +61,9 @@ class QLearn:
         self.player_index = index
         self.number_of_wins = 0
         self.number_of_games = 0
+        self.actions_per_game = []  # Number of actions for each game
+        self.actions_this_game = 0  # Count actions in the current game
+
 
     def reset(self):
         self.current_state = [self.startArea] * 4
@@ -69,6 +72,8 @@ class QLearn:
         self.last_player_pieces = [0] * 4
         self.sum_of_rewards = 0.0
         self.number_of_games += 1
+        self.actions_per_game.append(self.actions_this_game)  # At the end of a game, add the action count to the list
+        self.actions_this_game = 0  # Reset the action count for the next game
 
     # State logic
     def piece_state(self, piece_pos, player_pieces, enemy_pieces, game):
@@ -222,6 +227,7 @@ class QLearn:
         current_states = self.states_logic(player_pieces, enemy_pieces, game)
         piece_index = self.pick_action(current_states, current_actions, BoltzmannTemperature)
         if self.training == 1 and piece_index is not None:
+            self.actions_this_game += 1  # Increment the action count each time an action is performed
             reward = self.reward(player_pieces, current_states, there_is_a_winner)
             self.sum_of_rewards += reward
             current_q_value = self.Q_table[current_states[piece_index]][current_actions[piece_index]]
