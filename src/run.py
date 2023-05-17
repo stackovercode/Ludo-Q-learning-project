@@ -128,13 +128,17 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
 
 def run():
     # Parameters
-    # learning_rate = [0.7] # 0.1
+    # learning_rate = [0.2] # 0.1
     # discount_factor = [0.4] #0.4
-    # boltzmann_temperature = [0.4] 
+    # boltzmann_temperature = [0.2] 
     
-    learning_rate = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
-    discount_factor = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
-    boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
+    learning_rate = [0.2, 0.25, 0.3]
+    discount_factor = [0.3, 0.35, 0.4]
+    boltzmann_temperature = [0.15, 0.2, 0.25]
+    
+    # learning_rate = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
+    # discount_factor = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+    # boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
 
     after = 250
     number_of_runs_for_training = 5000
