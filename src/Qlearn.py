@@ -179,7 +179,7 @@ class QLearn:
         if self.last_action == self.starting_action:
             reward += 0.25
         if self.last_action == self.kill_player_action:
-            reward += 0.9
+            reward = -0.7
         if self.last_action == self.die_action:
             reward += -0.2
         if self.last_action == self.default_action:
@@ -193,9 +193,9 @@ class QLearn:
         if self.last_action == self.enter_winningArea_action:
             reward += 1.0
         if self.last_action == self.move_outside_safety_action:
-            reward += -0.1
+            reward += -0.4
         if self.last_action == self.move_inside_safety_action:
-            reward += 0.
+            reward += 0.3
         if self.last_action == self.no_action:
             reward += -0.05
 

@@ -14,6 +14,13 @@ device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
 
 
+# def plot_rewards(rewards, title):
+#     plt.plot(rewards)
+#     plt.title(title)
+#     plt.xlabel("Game")
+#     plt.ylabel("Cumulative Reward")
+#     plt.show()
+
 def show_progress(label,full, prog):
     #print(label,":","\n")
     sys.stdout.write("\r{0}%  [{1}{2}]".format(prog, "█"*full, " "*(15-full)))
@@ -54,11 +61,18 @@ def play_game(q, q_player, training=True, current_game=0, after=0):
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner,
         there_is_a_winner), player_i = g.get_observation()
 
+        # if player_i == q_player:
+        #     piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
+        #     if there_is_a_winner == 1:
+        #         stop_while = True
+        #         win_rate = 1 if player_is_a_winner else 0
         if player_i == q_player:
             piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
+            #print(f"Chosen action: {piece_to_move}, Q-value: {q.Q_table[q.current_state][piece_to_move]}")
             if there_is_a_winner == 1:
                 stop_while = True
                 win_rate = 1 if player_is_a_winner else 0
+                #print(f"Reward: {win_rate}") 
         else:
             if len(move_pieces):
                 piece_to_move = move_pieces[np.random.randint(0, len(move_pieces))]
@@ -114,17 +128,17 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
 
 def run():
     # Parameters
-    learning_rate = [0.6] # 0.1
-    discount_factor = [0.4] #0.4
-    boltzmann_temperature = [0.1] 
+    # learning_rate = [0.7] # 0.1
+    # discount_factor = [0.4] #0.4
+    # boltzmann_temperature = [0.4] 
     
-    # learning_rate_vec = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
-    # discount_factor_vec = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
-    #boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
+    learning_rate = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
+    discount_factor = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+    boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
 
-    after = 100
-    number_of_runs_for_training = 3200
-    number_of_runs_for_validation = 800
+    after = 250
+    number_of_runs_for_training = 5000
+    number_of_runs_for_validation = 500
     q_player = 0
 
     # Set for traning
@@ -145,8 +159,6 @@ def run():
                 array_of_sum_of_rewards, win_rate_list = training_phase(q, number_of_runs_for_training, q_player, after=after)
                 wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation_phase(q, number_of_runs_for_validation, q_player, after=after)
 
-
-
                 win_rate = (wins[q_player] / number_of_runs_for_validation)
                 print('Win rate: ', win_rate, "\n")
                 win_rate_vec[BTidx][DFidx][LRidx] = win_rate_list + win_rate_list_validation
@@ -156,8 +168,12 @@ def run():
             
                 games_wins[BTidx][DFidx][LRidx] = win_rate_list + win_rate_list_validation
                 # Test progress
-                plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
-                plot_heatMap(q)
+                # plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
+                # plot_heatMap(q)
+
+                # plot_rewards(array_of_sum_of_rewards, "Training Phase Cumulative Rewards")
+
+                # plot_rewards(array_of_sum_of_rewards_validation, "Validation Phase Cumulative Rewards")
 
                 q.save_QTable("Best_learning_parameters" + str(number_of_runs_for_training) + ".npy")
 

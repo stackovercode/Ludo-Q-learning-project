@@ -35,13 +35,31 @@ best_index = [0,0,0]
 best_data = []
 temp_data = []
 
+avg_win_rate = np.zeros((len(boltzmann_temperature), len(discount_factor)))
+
+
 for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerate(boltzmann_temperature), enumerate(discount_factor), enumerate(learning_rate)):
-            temp_win_rate = np.sum(win_rate_vec[BTidx][DFidx][LRidx]) / len(win_rate_vec[BTidx][DFidx][LRidx])
-            if temp_win_rate > highest_win_rate :
-                highest_win_rate = temp_win_rate
-                temp_data = exponential_moving_average(win_rate_vec[BTidx][DFidx][LRidx], 0.5)
-                best_data = win_rate_vec[BTidx][DFidx][LRidx]
-                best_index = [BTval, DFval, LRval]
+    avg_win_rate[BTidx][DFidx] = np.mean(win_rate_vec[BTidx][DFidx])
+    temp_win_rate = np.sum(win_rate_vec[BTidx][DFidx][LRidx]) / len(win_rate_vec[BTidx][DFidx][LRidx])
+    if temp_win_rate > highest_win_rate :
+        highest_win_rate = temp_win_rate
+        temp_data = exponential_moving_average(win_rate_vec[BTidx][DFidx][LRidx], 0.5)
+        best_data = win_rate_vec[BTidx][DFidx][LRidx]
+        best_index = [BTval, DFval, LRval]
+
+
+BT, DF = np.meshgrid(boltzmann_temperature, discount_factor)
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+ax.plot_surface(BT, DF, avg_win_rate, cmap='viridis')
+
+ax.set_xlabel('Boltzmann Temperature')
+ax.set_ylabel('Discount Factor')
+ax.set_zlabel('Win Rate')
+
+plt.show()
 
 # print(highest_win_rate, best_index)
 # fig, axs = plt.subplots()
