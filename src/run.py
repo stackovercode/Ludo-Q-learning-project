@@ -14,12 +14,14 @@ device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
 
 
-# def plot_rewards(rewards, title):
-#     plt.plot(rewards)
-#     plt.title(title)
-#     plt.xlabel("Game")
-#     plt.ylabel("Cumulative Reward")
-#     plt.show()
+# def show_overall_progress(label, full, prog):
+#     sys.stdout.write("\r{0}: {1}%  [{2}{3}]".format(label, prog, "█"*full, " "*(15-full)))
+#     sys.stdout.flush()
+
+def show_overall_progress(label, full, prog):
+    sys.stdout.write("\r{0}: {1}%  [{2}{3}]".format(label, prog, "█"*full, " "*(15-full)))
+    sys.stdout.flush()
+
 
 def show_progress(label,full, prog):
     #print(label,":","\n")
@@ -89,7 +91,7 @@ def training_phase(q, number_of_runs_for_training, q_player, after=0):
     array_of_sum_of_rewards = []
     #win_rate_list = []
     win_rate_list = [0]*after
-    print('training_phase: ', 'BT: ', q.boltzmann_temperature, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate, "\n")
+   # print('training_phase: ', 'BT: ', q.boltzmann_temperature, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate, "\n")
     for k in range(number_of_runs_for_training):
         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=True, current_game=k, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
@@ -97,11 +99,11 @@ def training_phase(q, number_of_runs_for_training, q_player, after=0):
         q.reset()
         
         # Show the progress bar
-        progress = int(((k + 1) / number_of_runs_for_training) * 15)
-        show_progress("training_phase",progress, int(((k + 1) / number_of_runs_for_training) * 100))
+        #progress = int(((k + 1) / number_of_runs_for_training) * 15)
+        #show_progress("training_phase",progress, int(((k + 1) / number_of_runs_for_training) * 100))
 
 
-    print("\n")
+    #print("\n")
     return array_of_sum_of_rewards, win_rate_list
 
 def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
@@ -110,7 +112,7 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
     array_of_sum_of_rewards = []
     win_rate_list = []
     #win_rate_list = [0]*after
-    print("validation_phase: ","\n")
+    #print("validation_phase: ","\n")
     for j in range(number_of_runs_for_validation):
         first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=False, current_game = j + after, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
@@ -118,10 +120,10 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
         q.reset()
         wins[first_winner] = wins[first_winner] + 1
 
-        progress = int(((j + 1) / number_of_runs_for_validation) * 15)
-        show_progress("validation_phase", progress, int(((j + 1) / number_of_runs_for_validation) * 100))
+        #progress = int(((j + 1) / number_of_runs_for_validation) * 15)
+        #show_progress("validation_phase", progress, int(((j + 1) / number_of_runs_for_validation) * 100))
         
-    print("\n")
+    #print("\n")
     return wins, array_of_sum_of_rewards, win_rate_list
 
 
@@ -132,18 +134,26 @@ def run():
     # discount_factor = [0.4] #0.4
     # boltzmann_temperature = [0.2] 
     
-    learning_rate = [0.2, 0.25, 0.3]
-    discount_factor = [0.3, 0.35, 0.4]
-    boltzmann_temperature = [0.15, 0.2, 0.25]
+    # learning_rate = [0.2, 0.25, 0.3, 0.35, 0.4]
+    # discount_factor = [0.3, 0.35, 0.4, 0.45, 0.5]
+    # boltzmann_temperature = [0.15, 0.2, 0.25, 0.3, 0.35]
     
-    # learning_rate = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
-    # discount_factor = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
-    # boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
+    learning_rate = [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6]
+    discount_factor = [0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+    boltzmann_temperature = [0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55]
 
-    after = 250
-    number_of_runs_for_training = 5000
-    number_of_runs_for_validation = 500
+    # after = 250
+    # number_of_runs_for_training = 5000
+    # number_of_runs_for_validation = 500
+    
+    after = 50
+    number_of_runs_for_training = 1000
+    number_of_runs_for_validation = 100
     q_player = 0
+    
+    total_iterations = len(boltzmann_temperature) * len(discount_factor) * len(learning_rate) * (number_of_runs_for_training + number_of_runs_for_validation)
+    current_iteration = 0
+
 
     # Set for traning
     size_of_win_rate_vec = (len(boltzmann_temperature), len(discount_factor), len(learning_rate), number_of_runs_for_training + number_of_runs_for_validation + after) 
@@ -151,6 +161,9 @@ def run():
     games_wins = np.zeros(size_of_win_rate_vec)
 
     for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerate(boltzmann_temperature), enumerate(discount_factor), enumerate(learning_rate)):
+                overall_progress = int((current_iteration / total_iterations) * 15)
+                show_overall_progress("Overall progress", overall_progress, int((current_iteration / total_iterations) * 100))
+
                 q = Qlearn.QLearn(q_player)
                 q.training = 1
                 
@@ -161,10 +174,14 @@ def run():
                 q.boltzmann_temperature = BTval
                 
                 array_of_sum_of_rewards, win_rate_list = training_phase(q, number_of_runs_for_training, q_player, after=after)
+                current_iteration += number_of_runs_for_training
+                
                 wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation_phase(q, number_of_runs_for_validation, q_player, after=after)
+                current_iteration += number_of_runs_for_validation
 
+                
                 win_rate = (wins[q_player] / number_of_runs_for_validation)
-                print('Win rate: ', win_rate, "\n")
+                #print('Win rate: ', win_rate, "\n")
                 win_rate_vec[BTidx][DFidx][LRidx] = win_rate_list + win_rate_list_validation
                 results = win_rate_vec[BTidx][DFidx][LRidx]
                 # Calculate the cumulative win rate after each game
