@@ -52,7 +52,7 @@ def plot_heatMap(q):
     plt.show()
 
 
-def play_game(q, q_player, training=True, current_game=0, after=0):
+def playGame(q, q_player, training=True, current_game=0, after=0):
     g = ludopy.Game()
     stop_while = False
     q.training = 1 if training and current_game > after else 0
@@ -64,12 +64,12 @@ def play_game(q, q_player, training=True, current_game=0, after=0):
         there_is_a_winner), player_i = g.get_observation()
 
         # if player_i == q_player:
-        #     piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
+        #     piece_to_move = q.updateQLogic(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
         #     if there_is_a_winner == 1:
         #         stop_while = True
         #         win_rate = 1 if player_is_a_winner else 0
         if player_i == q_player:
-            piece_to_move = q.updateQTable(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
+            piece_to_move = q.updateQLogic(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
             #print(f"Chosen action: {piece_to_move}, Q-value: {q.Q_table[q.current_state][piece_to_move]}")
             if there_is_a_winner == 1:
                 stop_while = True
@@ -87,13 +87,13 @@ def play_game(q, q_player, training=True, current_game=0, after=0):
     return g.first_winner_was, q.sum_of_rewards, win_rate
 
 
-def training_phase(q, number_of_runs_for_training, q_player, after=0):
+def training(q, number_of_runs_for_training, q_player, after=0):
     array_of_sum_of_rewards = []
     #win_rate_list = []
     win_rate_list = [0]*after
    # print('training_phase: ', 'BT: ', q.boltzmann_temperature, ' DF: ', q.discount_factor, ' LR: ', q.learning_rate, "\n")
     for k in range(number_of_runs_for_training):
-        first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=True, current_game=k, after=after)
+        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=True, current_game=k, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
@@ -106,7 +106,7 @@ def training_phase(q, number_of_runs_for_training, q_player, after=0):
     #print("\n")
     return array_of_sum_of_rewards, win_rate_list
 
-def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
+def validation(q, number_of_runs_for_validation, q_player, after=0):
     wins = [0, 0, 0, 0]
     q.training = 0
     array_of_sum_of_rewards = []
@@ -114,7 +114,7 @@ def validation_phase(q, number_of_runs_for_validation, q_player, after=0):
     #win_rate_list = [0]*after
     #print("validation_phase: ","\n")
     for j in range(number_of_runs_for_validation):
-        first_winner, sum_of_rewards, win_rate = play_game(q, q_player, training=False, current_game = j + after, after=after)
+        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=False, current_game = j + after, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
@@ -173,10 +173,10 @@ def run():
                 q.discount_factor = DFval
                 q.boltzmann_temperature = BTval
                 
-                array_of_sum_of_rewards, win_rate_list = training_phase(q, number_of_runs_for_training, q_player, after=after)
+                array_of_sum_of_rewards, win_rate_list = training(q, number_of_runs_for_training, q_player, after=after)
                 current_iteration += number_of_runs_for_training
                 
-                wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation_phase(q, number_of_runs_for_validation, q_player, after=after)
+                wins, array_of_sum_of_rewards_validation, win_rate_list_validation = validation(q, number_of_runs_for_validation, q_player, after=after)
                 current_iteration += number_of_runs_for_validation
 
                 
