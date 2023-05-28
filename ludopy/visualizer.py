@@ -374,7 +374,7 @@ def save_video(filename, ar, fps=8, frame_size=None, fourcc=None, cvt_color_flag
     if fourcc is None:
         file_ext = os.path.split(filename)[-1].split(os.path.extsep)[-1]
         if file_ext == "mp4":
-            encoder = cv2.VideoWriter_fourcc(*'MP4V')
+            encoder = cv2.VideoWriter_fourcc(*'avc1') # Previously it was *'MP4V' 
         elif file_ext == "avi":
             encoder = cv2.VideoWriter_fourcc(*'MJPG')
         else:

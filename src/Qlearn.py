@@ -46,7 +46,7 @@ class QLearn:
         self.discount_factor = 0.5
         self.boltzmann_temperature = 0.5
         self.sum_of_rewards = 0.0
-        self.training = 1  # determineds if the q table is updated and if there is going to be any explorations.
+        self.training = 1 
         self.Q_table = np.zeros((self.number_States, self.number_Actions), dtype=float)
 
         self.player_index = index
