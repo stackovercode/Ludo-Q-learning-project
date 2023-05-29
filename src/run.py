@@ -14,7 +14,7 @@ import cv2
 
 device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
-runMultipleParameters = False
+runMultipleParameters = True
 training_started = False
 
 def show_progress(label, full, prog):
@@ -22,8 +22,8 @@ def show_progress(label, full, prog):
     sys.stdout.flush()
 
 def plot_heatMap(q):
-    state_labels = ["start", "goal", "winning", "danger", "safe", "default"]
-    action_labels = ["Starting", "Default", "Inside_goal", "Enter_goal", "Enter_winning", "Star", "Move_safety", "Move_away_safety", "Kill_enemy", "Die_action", "No_action"]
+    state_labels = ["START_AREA", "GOAL_AREA", "WINNING_AREA", "DANGER_AREA", "SAFE_AREA", "DEFAULT_AREA"]
+    action_labels = ["STARTING_ACTION", "DEFAULT_ACTION", "INSIDE_GOAL_AREA_ACTION", "ENTER_GOAL_AREA_ACTION", "ENTER_WINNING_AREA_ACTION", "STAR_ACTION", "MOVE_INSIDE_SAFETY_ACTION", "MOVE_OUTSIDE_SAFETY_ACTION", "KILL_PLAYER_ACTION", "DIE_ACTION", "NO_ACTION"]
 
     fig, ax = plt.subplots()
     im = ax.imshow(q.Q_table, cmap='coolwarm')
@@ -129,10 +129,16 @@ def validation(q, number_of_runs_for_validation, q_player, after=0):
         #     average_win_rate = sum(win_rate_list[-45:]) / 45
         #     average_validate_win_rates.append(average_win_rate)
         
-        # Compute average win rate after every 60 games
-        if (i+1) % 60 == 0:
-            average_win_rate = sum(win_rate_list[-50:]) / 50
-            average_validate_win_rates.append(average_win_rate)
+        # # Compute average win rate after every 60 games
+        # if (i+1) % 60 == 0:
+        #     average_win_rate = sum(win_rate_list[-50:]) / 50
+        #     average_validate_win_rates.append(average_win_rate)
+
+        # # Compute average win rate after every 60 games
+        # if (i+1) % 60 == 0:
+        #     average_win_rate = sum(win_rate_list[-50:]) / 50
+        #     average_validate_win_rates.append(average_win_rate)
+
 
         if runMultipleParameters == False:
             progress = int(((i + 1) / number_of_runs_for_validation) * 30)
@@ -150,9 +156,10 @@ def run():
     # discount_factor = [0.225] #0.4
     # boltzmann_temperature = [0.175] #0.2 
     
-    learning_rate = [0.325] # 0.3
-    discount_factor = [0.175] #0.2
-    boltzmann_temperature = [0.125] #0.2 
+    ####################### BEST #######################
+    # learning_rate = [0.325] 
+    # discount_factor = [0.175] 
+    # boltzmann_temperature = [0.125] 
     
     # learning_rate = [0.25, 0.275 , 0.3, 0.325, 0.35] # 0.3
     # discount_factor = [0.15, 0.175 , 0.2, 0.225, 0.25] # 0.2
@@ -162,9 +169,9 @@ def run():
     # discount_factor = [0.2, 0.3, 0.4, 0.5] #0.4
     # boltzmann_temperature = [0.2, 0.3, 0.4, 0.5] #0.2 
     
-    # learning_rate = [0.275, 0.300, 0.325, 0.350, 0.375]
-    # discount_factor = [0.175, 0.200, 0.225, 0.250, 0.275]
-    # boltzmann_temperature = [0.125, 0.150, 0.175, 0.200, 0.225]
+    learning_rate = [0.275, 0.300, 0.325, 0.350, 0.375]
+    discount_factor = [0.175, 0.200, 0.225, 0.250, 0.275]
+    boltzmann_temperature = [0.125, 0.150, 0.175, 0.200, 0.225]
 
     
     # learning_rate = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65]
@@ -187,7 +194,7 @@ def run():
     # q_player = 0
     
     after = 1
-    number_of_runs_for_training = 7500 # 3600
+    number_of_runs_for_training = 2000 # 7500
     number_of_runs_for_validation = 1 # 900
     q_player = 0
     
@@ -238,6 +245,7 @@ def run():
         # Test progress
         #plt.plot(range(len(array_of_sum_of_rewards)),array_of_sum_of_rewards)
         #plot_heatMap(q)
+        
 
         # plot_rewards(array_of_sum_of_rewards, "Training Phase Cumulative Rewards")
         # plot_rewards(array_of_sum_of_rewards_validation, "Validation Phase Cumulative Rewards")

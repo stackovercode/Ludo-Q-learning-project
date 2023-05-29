@@ -14,18 +14,18 @@ other_win_rates_df = pd.read_csv('other_win_rates.csv')
 
 # Calculate rolling averages
 my_win_rates_data = exponential_average(my_win_rates_df['my_win_rate'], 0.1)  # replace 'my_win_rate' with your actual column name
-other_win_rates_data =  exponential_average(other_win_rates_df['other_win_rate'], 0.2)  # replace 'other_win_rate' with your actual column name
+other_win_rates_data =  exponential_average(other_win_rates_df['other_win_rate'], 0.1)  # replace 'other_win_rate' with your actual column name
 
 # Create a list of episode numbers matching the length of your win rates
 episodes = list(range(1, len(my_win_rates_data) + 1))
 
 # Create a scatter plot
-plt.scatter(episodes, exponential_average(my_win_rates_df['my_win_rate'], 0.3), label='My Win Rates', color='lightblue', linewidth=1.0)
-plt.plot(episodes,  my_win_rates_data, label='My Win Rates', color='orange', linewidth=2.0)
+plt.scatter(episodes, exponential_average(my_win_rates_df['my_win_rate'], 0.3), color='lightblue', linewidth=1.0)
+plt.plot(episodes,  my_win_rates_data, label='Own method', color='orange', linewidth=2.0)
 
-plt.scatter(episodes, exponential_average(other_win_rates_df['other_win_rate'], 0.3), label='My Win Rates', color='lightblue', linewidth=1.0)
-plt.plot(episodes,  other_win_rates_data, label='My Win Rates', color='red', linewidth=2.0)
-
+plt.scatter(episodes, exponential_average(other_win_rates_df['other_win_rate'], 0.3), color='lightblue', linewidth=1.0)
+plt.plot(episodes,  other_win_rates_data, label='Comp. method', color='red', linewidth=2.0)
+plt.legend(loc=4, fontsize=12)
 # set the title and labels
 plt.title('Average Win Rates over Episodes')
 plt.xlabel('Episode')
