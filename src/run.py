@@ -15,6 +15,7 @@ import cv2
 device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
 runMultipleParameters = False
+training_started = False
 
 def show_progress(label, full, prog):
     sys.stdout.write("\r{0}: {1}%  [{2}{3}]".format(label, prog, "█"*full, " "*(30-full)))
@@ -46,16 +47,21 @@ def plot_heatMap(q):
 def playGame(q, q_player, training=True, current_game=0, after=0):
     g = ludopy.Game()
     stop_while = False
-    q.training = 1 if training and current_game > after else 0
+    if training:
+        global training_started
+        if not training_started and current_game > after:
+            q.training = 1
+            training_started = True
+        elif training_started:
+            q.training = 1
+        else:
+            q.training = 0
+    elif not training:
+        q.training = 1 if training and current_game > after else 0
     win_rate = 0
 
     while not stop_while:
         (dice, move_pieces, player_pieces, enemy_pieces, player_is_a_winner, there_is_a_winner), player_i = g.get_observation()
-        # enviroment_image_rgb = g.render_environment() # RGB image of the enviroment
-        # enviroment_image_bgr = cv2.cvtColor(enviroment_image_rgb, cv2.COLOR_RGB2BGR)
-        # cv2.imshow("Enviroment", enviroment_image_bgr)
-        # cv2.waitKey(1)
-        
         if player_i == q_player:
             piece_to_move = q.updateQLogic(player_pieces, enemy_pieces, dice, g, there_is_a_winner) if current_game > after else (np.random.choice(move_pieces) if len(move_pieces) > 0 else -1)
             if there_is_a_winner == 1:
@@ -82,20 +88,26 @@ def training(q, number_of_runs_for_training, q_player, after=0):
     win_rate_list = [0]*after
     #win_rate_list = []
     average_train_win_rates = []  # List to hold average win rates
-    for k in range(number_of_runs_for_training):
-        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=True, current_game=k, after=after)
+    for i in range(number_of_runs_for_training):
+        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=True, current_game=i, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
         
-        # Compute average win rate after every 45 games
-        if (k+1) % 45 == 0:
-            average_win_rate = sum(win_rate_list[-45:]) / 45
+        # # Compute average win rate after every 45 games
+        # if (i+1) % 45 == 0:
+        #     average_win_rate = sum(win_rate_list[-45:]) / 45
+        #     average_train_win_rates.append(average_win_rate)
+        
+        # Compute average win rate after every 75 games
+        if (i+1) % 50 == 0:
+            average_win_rate = sum(win_rate_list[-75:]) / 75
             average_train_win_rates.append(average_win_rate)
+
         
         if runMultipleParameters == False:
-            progress = int(((k + 1) / number_of_runs_for_training) * 30)
-            show_progress("training",progress, int(((k + 1) / number_of_runs_for_training) * 100))
+            progress = int(((i + 1) / number_of_runs_for_training) * 30)
+            show_progress("training",progress, int(((i + 1) / number_of_runs_for_training) * 100))
 
     return array_of_sum_of_rewards, win_rate_list, average_train_win_rates
 
@@ -105,21 +117,26 @@ def validation(q, number_of_runs_for_validation, q_player, after=0):
     array_of_sum_of_rewards = []
     win_rate_list = []
     average_validate_win_rates = []  # List to hold average win rates
-    for j in range(number_of_runs_for_validation):
-        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=False, current_game = j + after, after=after)
+    for i in range(number_of_runs_for_validation):
+        first_winner, sum_of_rewards, win_rate = playGame(q, q_player, training=False, current_game = i + after, after=after)
         array_of_sum_of_rewards.append(sum_of_rewards)
         win_rate_list.append(win_rate)
         q.reset()
         wins[first_winner] = wins[first_winner] + 1
         
-        # Compute average win rate after every 45 games
-        if (j+1) % 45 == 0:
-            average_win_rate = sum(win_rate_list[-45:]) / 45
+        # # Compute average win rate after every 45 games
+        # if (i+1) % 45 == 0:
+        #     average_win_rate = sum(win_rate_list[-45:]) / 45
+        #     average_validate_win_rates.append(average_win_rate)
+        
+        # Compute average win rate after every 60 games
+        if (i+1) % 60 == 0:
+            average_win_rate = sum(win_rate_list[-50:]) / 50
             average_validate_win_rates.append(average_win_rate)
 
         if runMultipleParameters == False:
-            progress = int(((j + 1) / number_of_runs_for_validation) * 30)
-            show_progress("validation", progress, int(((j + 1) / number_of_runs_for_validation) * 100))
+            progress = int(((i + 1) / number_of_runs_for_validation) * 30)
+            show_progress("validation", progress, int(((i + 1) / number_of_runs_for_validation) * 100))
         
     #print("\n")
     return wins, array_of_sum_of_rewards, win_rate_list, average_validate_win_rates
@@ -129,13 +146,26 @@ def validation(q, number_of_runs_for_validation, q_player, after=0):
 def run():
     # Parameters
     
-    learning_rate = [0.2] # 0.1
-    discount_factor = [0.4] #0.4
-    boltzmann_temperature = [0.2] #0.2 
+    # learning_rate = [0.325] # 0.1
+    # discount_factor = [0.225] #0.4
+    # boltzmann_temperature = [0.175] #0.2 
     
-    # learning_rate = [0.2, 0.3, 0.4, 0.5] # 0.1
-    # discount_factor = [0.4, 0.3, 0.4, 0.5] #0.4
+    learning_rate = [0.325] # 0.3
+    discount_factor = [0.175] #0.2
+    boltzmann_temperature = [0.125] #0.2 
+    
+    # learning_rate = [0.25, 0.275 , 0.3, 0.325, 0.35] # 0.3
+    # discount_factor = [0.15, 0.175 , 0.2, 0.225, 0.25] # 0.2
+    # boltzmann_temperature = [0.15, 0.175 , 0.2, 0.225, 0.25] # 0.2
+    
+    # learning_rate = [0.3, 0.4, 0.5, 0.6] # 0.1
+    # discount_factor = [0.2, 0.3, 0.4, 0.5] #0.4
     # boltzmann_temperature = [0.2, 0.3, 0.4, 0.5] #0.2 
+    
+    # learning_rate = [0.275, 0.300, 0.325, 0.350, 0.375]
+    # discount_factor = [0.175, 0.200, 0.225, 0.250, 0.275]
+    # boltzmann_temperature = [0.125, 0.150, 0.175, 0.200, 0.225]
+
     
     # learning_rate = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65]
     # discount_factor = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65]
@@ -146,9 +176,19 @@ def run():
     # number_of_runs_for_training = 5000
     # number_of_runs_for_validation = 500
     
-    after = 10
-    number_of_runs_for_training = 6000 # 3600
-    number_of_runs_for_validation = 4000 # 900
+    # after = 10
+    # number_of_runs_for_training = 6000 # 3600
+    # number_of_runs_for_validation = 4000 # 900
+    # q_player = 0
+    
+    # after = 1
+    # number_of_runs_for_training = 2000 # 3600
+    # number_of_runs_for_validation = 1 # 900
+    # q_player = 0
+    
+    after = 1
+    number_of_runs_for_training = 7500 # 3600
+    number_of_runs_for_validation = 1 # 900
     q_player = 0
     
     total_iterations = len(boltzmann_temperature) * len(discount_factor) * len(learning_rate) * (number_of_runs_for_training + number_of_runs_for_validation)
@@ -176,17 +216,23 @@ def run():
         q.discount_factor = DFval
         q.boltzmann_temperature = BTval
         
+        global training_started
+        training_started = False
+        
         array_of_sum_of_rewards, win_rate_list, average_train_win_rates = training(q, number_of_runs_for_training, q_player, after=after)
         current_iteration += number_of_runs_for_training
+        #print("Win_rate_list: ",win_rate_list)
         
         wins, array_of_sum_of_rewards_validation, win_rate_list_validation, average_validate_win_rates = validation(q, number_of_runs_for_validation, q_player, after=after)
         current_iteration += number_of_runs_for_validation
+        #print("win_rate_list_validation: ", win_rate_list_validation)
+
         
-        
-        win_rate = (wins[q_player] / number_of_runs_for_validation)
+        #win_rate = (wins[q_player] / number_of_runs_for_validation)        
         win_rate_vec[BTidx][DFidx][LRidx] = win_rate_list + win_rate_list_validation
         results = win_rate_vec[BTidx][DFidx][LRidx]
         win_rate_vec[BTidx][DFidx][LRidx] = np.cumsum(results) / (np.arange(len(results)) + 1)
+        #print("win_rate_vec[BTidx][DFidx][LRidx]: ", win_rate_vec[BTidx][DFidx][LRidx])
     
         games_wins[BTidx][DFidx][LRidx] = win_rate_list + win_rate_list_validation
         # Test progress
@@ -201,16 +247,14 @@ def run():
         
         average_win_rates = average_train_win_rates + average_validate_win_rates
 
-        with open('average_win_rates.csv', 'w', newline='') as file:
+        with open('my_win_rates_new.csv', 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["episode", "average_win_rate"])
+            writer.writerow(["episode", "my_win_rate"])
             for i, rate in enumerate(average_win_rates):
                 writer.writerow([i+1, rate])
                 
     # Save data and parameters
     save_data_and_parameters(win_rate_vec, boltzmann_temperature, discount_factor, learning_rate, number_of_runs_for_training, number_of_runs_for_validation, actions_per_game, games_wins, average_win_rates)
-    
-    
     return True
 
 def save_data_and_parameters(win_rate_vec, explore_rate_vec, discount_factor_vec, learning_rate_vec, number_of_runs_for_training, number_of_runs_for_validation, actions_per_game, games_wins, average_win_rates):

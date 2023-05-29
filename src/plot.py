@@ -10,19 +10,20 @@ from pandas.plotting import scatter_matrix
 import matplotlib.gridspec as gridspec
 
 
-def moving_average(list, N):
+def rolling_average(data, window):
     cumsum, moving_aves = [0], []
-    for i, x in enumerate(list, 1):
-        cumsum.append(cumsum[i - 1] + x)
-        if i >= N:
-            moving_ave = (cumsum[i] - cumsum[i - N]) / N
+    for i, x in enumerate(data, 1):
+        cumsum.append(cumsum[i-1] + x)
+        if i >= window:
+            moving_ave = (cumsum[i] - cumsum[i-window]) / window
             moving_aves.append(moving_ave)
     return moving_aves
 
-def exponential_moving_average(list, alpha):
-    ema = [list[0]]  # starts from the first data point
-    for i in range(1, len(list)):
-        ema.append(alpha * list[i] + (1 - alpha) * ema[i-1])
+
+def exponential_average(data, alpha):
+    ema = [data[0]]  # starts from the first data point
+    for i in range(1, len(data)):
+        ema.append(alpha * data[i] + (1 - alpha) * ema[i-1])
     return ema
 
 
@@ -48,7 +49,6 @@ temp_data = []
 avg_win_rate = np.zeros((len(boltzmann_temperature), len(discount_factor), len(learning_rate)))
 data_long = pd.DataFrame(columns=['Boltzmann Temperature', 'Discount Factor', 'Learning Rate', 'Win Rate'])
 
-
 for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerate(boltzmann_temperature), enumerate(discount_factor), enumerate(learning_rate)):
     #Append this combination and its win rate to the DataFrame
     data_long = data_long.append({
@@ -61,55 +61,49 @@ for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerat
     temp_win_rate = np.sum(win_rate_vec[BTidx][DFidx][LRidx]) / len(win_rate_vec[BTidx][DFidx][LRidx])
     if temp_win_rate > highest_win_rate :
         highest_win_rate = temp_win_rate
-        temp_data = exponential_moving_average(win_rate_vec[BTidx][DFidx][LRidx], 0.5)
+        temp_data = exponential_average(win_rate_vec[BTidx][DFidx][LRidx], 0.5)
+        # not used
+        temp_data2 = rolling_average(win_rate_vec[BTidx][DFidx][LRidx], 5)
         best_data = win_rate_vec[BTidx][DFidx][LRidx]
         best_index = [BTval, DFval, LRval]
+        
 
-
-print(highest_win_rate, best_index)
-fig, axs = plt.subplots()
-axs.set_xlabel('Number of games', fontsize=12)
-axs.set_ylabel('Win rate [%]', fontsize=12)
-axs.plot(range(1, len(best_data) + 1), [element * 100 for element in best_data], label='Raw win rate',  color='blue')
-axs.plot(range(1, len(temp_data) + 1), [element * 100 for element in temp_data], linewidth=2, label='Smooth win rate',  color='orange')
-axs.legend(loc=4, fontsize=12)
-plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/Best_winrate2.png', bbox_inches='tight')
-plt.show()
-
-
-############ PLOT compare ############
-# average_win_rates_data = exponential_moving_average(average_win_rates, 0.1)
-# # create a list of episode numbers matching the length of your win rates
-# episodes = list(range(1, len(average_win_rates_data) + 1))
-# ## create the scatter plot
-# plt.scatter(episodes, average_win_rates_data)
-# plt.plot(episodes, average_win_rates_data, label='Average Win Rate', linewidth = 2, color='red')
-# # set the title and labels
-# plt.title('Average Win Rates over Episodes')
-# plt.xlabel('Episode')
-# plt.ylabel('Average Win Rate')
-# # Set the y-axis limits and step size
-# plt.ylim([0, 0.6])
-# plt.yticks([i/10 for i in range(0,7)])
-# plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/averge_winrate.png', bbox_inches='tight')
-# plt.show()
-
-############ PLOT 1 ############
+############ PLOT 1 - Only win rate ############
 # print(highest_win_rate, best_index)
 # fig, axs = plt.subplots()
 # axs.set_xlabel('Number of games', fontsize=12)
 # axs.set_ylabel('Win rate [%]', fontsize=12)
-# axs.plot(range(1, len(best_data) + 1), [element * 100 for element in best_data], label = 'Raw win rate')
-# axs.plot(range(1, len(temp_data) + 1), [element * 100 for element in temp_data], linewidth = 3, label = 'Smooth win rate')
+# axs.plot(range(1, len(best_data) + 1), [element * 100 for element in best_data], label='Raw win rate',  color='blue')
+# axs.plot(range(1, len(temp_data) + 1), [element * 100 for element in temp_data], linewidth=2, label='Smooth win rate',  color='orange')
+# #axs.plot(range(1, len(temp_data2) + 1), [element * 100 for element in temp_data2], linewidth=2, label='Rolling average',  color='red')
+
 # axs.legend(loc=4, fontsize=12)
 # plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/Best_winrate2.png', bbox_inches='tight')
 # plt.show()
 
 
-############ PLOT 2 ############
+############ PLOT 2 - used to compare ############
+average_win_rates_data = exponential_average(average_win_rates, 0.3)
+# create a list of episode numbers matching the length of your win rates
+episodes = list(range(1, len(average_win_rates_data) + 1))
+## create the scatter plot
+plt.scatter(episodes, average_win_rates_data)
+plt.plot(episodes, exponential_average(average_win_rates, 0.1), label='Average Win Rate', linewidth = 2, color='red')
+# set the title and labels
+plt.title('Average Win Rates over Episodes')
+plt.xlabel('Episode')
+plt.ylabel('Average Win Rate')
+# Set the y-axis limits and step size
+plt.ylim([0, 0.6])
+plt.yticks([i/10 for i in range(0,7)])
+plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/averge_winrate_my.png', bbox_inches='tight')
+plt.show()
+
+
+############ PLOT 3 - Visualizing Actions per game ############
 # games_played_raw = list(range(1, len(actions_per_game) + 1))
 # # Generate x values for moving average data
-# actions_per_game_data = moving_average(actions_per_game, 15)
+# actions_per_game_data = rolling_average(actions_per_game, 15)
 # games_played_ma = list(range(1, len(actions_per_game_data) + 1))  
 # plt.figure(figsize=(10, 6))
 # # Plot raw data
@@ -125,7 +119,7 @@ plt.show()
 
 
 
-############ OVERALL PLOT ############
+############ Plot 4 - OVERALL PLOT ############
 # # Define your 2x2 main subplots
 # fig = plt.figure(figsize=(15, 15))
 # gs = gridspec.GridSpec(2, 2, figure=fig)
@@ -159,6 +153,10 @@ plt.show()
 
 
 # # Plot 3: Histogram of actions for won games
+# # Histogram of actions for won games
+# games_wins_flat = np.array(games_wins).flatten()
+# actions_won_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 1]
+# actions_lost_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 0]
 # ax3.hist(actions_won_games, bins=50, alpha=0.5, label='Won Games', color='blue')
 # ax3.hist(actions_lost_games, bins=50, alpha=0.5, label='Lost Games', color='orange')
 # ax3.set_xlabel('Actions per Game')

@@ -187,9 +187,9 @@ class QLearn:
         if self.last_action == Action.STARTING_ACTION.value:
             reward += 0.25
         if self.last_action == Action.KILL_PLAYER_ACTION.value:
-            reward = -0.7
+            reward += -0.7
         if self.last_action == Action.DIE_ACTION.value:
-            reward += -0.2
+            reward += -0.5
         if self.last_action == Action.DEFAULT_ACTION.value:
             reward += 0.001
         if self.last_action == Action.INSIDE_GOAL_AREA_ACTION.value:
@@ -220,13 +220,14 @@ class QLearn:
             elif state == State.WINNING_AREA.value:
                 reward += 0.1 
 
-        # Reward logic based on there is a winner
-        if there_is_a_winner:
-            if there_is_a_winner == self.player_index:
-                reward += 1.0 
-            else:
-                reward -= 1.0
-
+        # # Reward logic based on there is a winner
+        # if there_is_a_winner:
+        #     if there_is_a_winner == self.player_index:
+        #         reward += 1.0 
+        #     else:
+        #         reward -= 1.0
+        
+   
 
         return reward
 
