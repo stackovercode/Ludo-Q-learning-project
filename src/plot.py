@@ -45,6 +45,24 @@ highest_win_rate = 0
 best_index = [0,0,0]
 best_data = []
 temp_data = []
+temp_win_rates = []
+
+
+# Your default parameters
+default_learning_rate = 0.325
+default_discount_factor = 0.175
+default_boltzmann_temperature = 0.125
+
+boltzmann_temperature_stored = []
+discount_factor_stored = []
+learning_rate_stored = []
+
+
+# Placeholder for your win rates
+win_rate_lr = []
+win_rate_df = []
+win_rate_bt = []
+
 
 avg_win_rate = np.zeros((len(boltzmann_temperature), len(discount_factor), len(learning_rate)))
 data_long = pd.DataFrame(columns=['Boltzmann Temperature', 'Discount Factor', 'Learning Rate', 'Win Rate'])
@@ -59,14 +77,75 @@ for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerat
     }, ignore_index=True)
     avg_win_rate[BTidx][DFidx][LRidx] = np.mean(win_rate_vec[BTidx][DFidx][LRidx])
     temp_win_rate = np.sum(win_rate_vec[BTidx][DFidx][LRidx]) / len(win_rate_vec[BTidx][DFidx][LRidx])
+    temp_win_rates.append(temp_win_rate)
+    if LRval != default_learning_rate:
+        learning_rate_stored.append(LRval)
+        win_rate_lr.append(temp_win_rate)
+    if DFval != default_discount_factor:
+        discount_factor_stored.append(DFval)
+        win_rate_df.append(temp_win_rate)
+    if BTval != default_boltzmann_temperature:
+        boltzmann_temperature_stored.append(BTval)
+        win_rate_bt.append(temp_win_rate)
+
     if temp_win_rate > highest_win_rate :
         highest_win_rate = temp_win_rate
         temp_data = exponential_average(win_rate_vec[BTidx][DFidx][LRidx], 0.5)
-        # not used
-        temp_data2 = rolling_average(win_rate_vec[BTidx][DFidx][LRidx], 5)
         best_data = win_rate_vec[BTidx][DFidx][LRidx]
         best_index = [BTval, DFval, LRval]
         
+
+plt.figure(figsize=(10, 6))
+plt.plot(win_rate_lr, label='Temp Win Rates')
+plt.xlabel('Parameters')
+plt.ylabel('Win rate')
+plt.title('Win rate over different parameters')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15))
+
+# #print("learning_rate_stored: ",learning_rate_stored)
+# print("win_rate_lr: ", len(win_rate_lr))
+# # Plot win rate against learning rate
+# ax1.plot(learning_rate_stored, win_rate_lr)
+# ax1.set_xlabel('Learning Rate')
+# ax1.set_ylabel('Win rate')
+# ax1.set_title('Win rate over different Learning Rates')
+
+# ax1.set_xlabel('Number of games', fontsize=12)
+# ax1.set_ylabel('Win rate [LR]', fontsize=12)
+# ax1.plot(range(1, len(win_rate_lr) + 1), [element * 100 for element in win_rate_lr], linewidth=2, label='Smooth win rate',  color='orange')
+# ax1.legend(loc=4, fontsize=12)
+
+
+# # Plot win rate against discount factor
+# ax2.plot(discount_factor_stored, win_rate_df)
+# ax2.set_xlabel('Discount Factor')
+# ax2.set_ylabel('Win rate')
+# ax2.set_title('Win rate over different Discount Factors')
+
+# # Plot win rate against Boltzmann Temperature
+# ax3.plot(boltzmann_temperature_stored, win_rate_bt)
+# ax3.set_xlabel('Boltzmann Temperature')
+# ax3.set_ylabel('Win rate')
+# ax3.set_title('Win rate over different Boltzmann Temperatures')
+# # Plot win rate against discount factor
+# ax2.plot(discount_factor, win_rate_df)
+# ax2.set_xlabel('Discount Factor')
+# ax2.set_ylabel('Win rate')
+# ax2.set_title('Win rate over different Discount Factors')
+
+# # Plot win rate against Boltzmann Temperature
+# ax3.plot(boltzmann_temperature, win_rate_bt)
+# ax3.set_xlabel('Boltzmann Temperature')
+# ax3.set_ylabel('Win rate')
+# ax3.set_title('Win rate over different Boltzmann Temperatures')
+
+# plt.tight_layout()
+# plt.show()
+
 
 ############ PLOT 1 - Only win rate ############
 # print(highest_win_rate, best_index)
@@ -83,21 +162,21 @@ for (BTidx, BTval), (DFidx, DFval), (LRidx, LRval) in itertools.product(enumerat
 
 
 ############ PLOT 2 - used to compare ############
-average_win_rates_data = exponential_average(average_win_rates, 0.3)
-# create a list of episode numbers matching the length of your win rates
-episodes = list(range(1, len(average_win_rates_data) + 1))
-## create the scatter plot
-plt.scatter(episodes, average_win_rates_data)
-plt.plot(episodes, exponential_average(average_win_rates, 0.1), label='Average Win Rate', linewidth = 2, color='red')
-# set the title and labels
-plt.title('Average Win Rates over Episodes')
-plt.xlabel('Episode')
-plt.ylabel('Average Win Rate')
-# Set the y-axis limits and step size
-plt.ylim([0, 0.6])
-plt.yticks([i/10 for i in range(0,7)])
-plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/averge_winrate_my.png', bbox_inches='tight')
-plt.show()
+# average_win_rates_data = exponential_average(average_win_rates, 0.3)
+# # create a list of episode numbers matching the length of your win rates
+# episodes = list(range(1, len(average_win_rates_data) + 1))
+# ## create the scatter plot
+# plt.scatter(episodes, average_win_rates_data)
+# plt.plot(episodes, exponential_average(average_win_rates, 0.1), label='Average Win Rate', linewidth = 2, color='red')
+# # set the title and labels
+# plt.title('Average Win Rates over Episodes')
+# plt.xlabel('Episode')
+# plt.ylabel('Average Win Rate')
+# # Set the y-axis limits and step size
+# plt.ylim([0, 0.6])
+# plt.yticks([i/10 for i in range(0,7)])
+# plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/averge_winrate_my.png', bbox_inches='tight')
+# plt.show()
 
 
 ############ PLOT 3 - Visualizing Actions per game ############
@@ -116,6 +195,7 @@ plt.show()
 # plt.legend()
 # plt.grid(False)
 # plt.show()
+
 
 
 
@@ -152,8 +232,8 @@ plt.show()
 # ax2.grid(False)
 
 
-# # Plot 3: Histogram of actions for won games
-# # Histogram of actions for won games
+# Plot 3: Histogram of actions for won games
+# Histogram of actions for won games
 # games_wins_flat = np.array(games_wins).flatten()
 # actions_won_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 1]
 # actions_lost_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 0]
@@ -162,6 +242,30 @@ plt.show()
 # ax3.set_xlabel('Actions per Game')
 # ax3.set_ylabel('Frequency')
 # ax3.set_title('Number of Actions per Game for Won and Lost Games')
+# ax3.legend()
+
+# Plot 3.1: Histogram of actions for won games
+# Histogram of actions for won games
+# games_wins_flat = np.array(games_wins).flatten()
+# actions_won_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 1]
+# actions_lost_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 0]
+# ax3.hist(actions_won_games, bins=50, alpha=0.5, label='Won Games', color='blue', density=True)
+# ax3.hist(actions_lost_games, bins=50, alpha=0.5, label='Lost Games', color='orange', density=True)
+# ax3.set_xlabel('Actions per Game')
+# ax3.set_ylabel('Probability')
+# ax3.set_title('Probability Distribution of Actions per Game for Won and Lost Games')
+# ax3.legend()
+
+# Plot 3.2: Histogram of actions for won games
+# Histogram of actions for won games
+# games_wins_flat = np.array(games_wins).flatten()
+# actions_won_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 1]
+# actions_lost_games = [actions_per_game[i] for i in range(len(actions_per_game)) if games_wins_flat[i] == 0]
+# sns.distplot(actions_won_games, bins=50, label='Won Games', color='blue', ax=ax3)
+# sns.distplot(actions_lost_games, bins=50, label='Lost Games', color='orange', ax=ax3)
+# ax3.set_xlabel('Actions per Game')
+# ax3.set_ylabel('Probability')
+# ax3.set_title('Probability Distribution of Actions per Game for Won and Lost Games')
 # ax3.legend()
 
 

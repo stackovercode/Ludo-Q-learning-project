@@ -55,6 +55,9 @@ class QLearn:
         self.actions_per_game = []
         self.actions_this_game = 0 
         
+        self.boltzmann_temperature = 0.5
+        self.annealing_rate = annealing_rate
+        
         # Initialize reset
         self.reset()
 
@@ -227,8 +230,6 @@ class QLearn:
         #     else:
         #         reward -= 1.0
         
-   
-
         return reward
 
     # Action selection logic using Boltzmann Exploration
