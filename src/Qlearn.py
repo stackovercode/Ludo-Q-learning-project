@@ -56,7 +56,7 @@ class QLearn:
         self.actions_this_game = 0 
         
         self.boltzmann_temperature = 0.5
-        self.annealing_rate = annealing_rate
+        self.annealing_rate = 0.99
         
         # Initialize reset
         self.reset()
