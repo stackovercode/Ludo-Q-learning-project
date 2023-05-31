@@ -18,28 +18,7 @@ training_started = False
 def show_progress(label, full, prog):
     sys.stdout.write("\r{0}: {1}%  [{2}{3}]".format(label, prog, "█"*full, " "*(30-full)))
     sys.stdout.flush()
-
-# def plot_heatMap(q):
-#     state_labels = ["START_AREA", "GOAL_AREA", "WINNING_AREA", "DANGER_AREA", "SAFE_AREA", "DEFAULT_AREA"]
-#     action_labels = ["STARTING_ACTION", "DEFAULT_ACTION", "INSIDE_GOAL_AREA_ACTION", "ENTER_GOAL_AREA_ACTION", "ENTER_WINNING_AREA_ACTION", "STAR_ACTION", "MOVE_INSIDE_SAFETY_ACTION", "MOVE_OUTSIDE_SAFETY_ACTION", "KILL_PLAYER_ACTION", "DIE_ACTION", "NO_ACTION"]
-
-#     fig, ax = plt.subplots()
-#     im = ax.imshow(q.Q_table, cmap='coolwarm')
-
-#     ax.set_xticks(np.arange(len(action_labels)))
-#     ax.set_yticks(np.arange(len(state_labels)))
-#     ax.set_xticklabels(action_labels)
-#     ax.set_yticklabels(state_labels)
-
-#     plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-#     for i in range(len(state_labels)):
-#         for j in range(len(action_labels)):
-#             text = ax.text(j, i, int(q.Q_table[i, j] * 100), ha="center", va="center", color="black")
-
-#     ax.set_title("Q-table")
-#     fig.tight_layout()
-#     plt.show()
+    
 def plot_heatMap(q):
     state_labels = ["START_AREA", "GOAL_AREA", "WINNING_AREA", "DANGER_AREA", "SAFE_AREA", "DEFAULT_AREA"]
     action_labels = ["STARTING_ACTION", "DEFAULT_ACTION", "INSIDE_GOAL_AREA_ACTION", "ENTER_GOAL_AREA_ACTION", "ENTER_WINNING_AREA_ACTION", "STAR_ACTION", "MOVE_INSIDE_SAFETY_ACTION", "MOVE_OUTSIDE_SAFETY_ACTION", "KILL_PLAYER_ACTION", "DIE_ACTION", "NO_ACTION"]
