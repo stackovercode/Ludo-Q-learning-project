@@ -7,10 +7,8 @@ import unittest
 import os
 import matplotlib.pyplot as plt
 import tensorflow as tf
-import time
 import itertools
 import csv
-import cv2
 
 device = "/gpu:0" if tf.config.list_physical_devices('GPU') else "/cpu:0"
 print(f"Running on {device}")
@@ -21,12 +19,33 @@ def show_progress(label, full, prog):
     sys.stdout.write("\r{0}: {1}%  [{2}{3}]".format(label, prog, "█"*full, " "*(30-full)))
     sys.stdout.flush()
 
+# def plot_heatMap(q):
+#     state_labels = ["START_AREA", "GOAL_AREA", "WINNING_AREA", "DANGER_AREA", "SAFE_AREA", "DEFAULT_AREA"]
+#     action_labels = ["STARTING_ACTION", "DEFAULT_ACTION", "INSIDE_GOAL_AREA_ACTION", "ENTER_GOAL_AREA_ACTION", "ENTER_WINNING_AREA_ACTION", "STAR_ACTION", "MOVE_INSIDE_SAFETY_ACTION", "MOVE_OUTSIDE_SAFETY_ACTION", "KILL_PLAYER_ACTION", "DIE_ACTION", "NO_ACTION"]
+
+#     fig, ax = plt.subplots()
+#     im = ax.imshow(q.Q_table, cmap='coolwarm')
+
+#     ax.set_xticks(np.arange(len(action_labels)))
+#     ax.set_yticks(np.arange(len(state_labels)))
+#     ax.set_xticklabels(action_labels)
+#     ax.set_yticklabels(state_labels)
+
+#     plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+#     for i in range(len(state_labels)):
+#         for j in range(len(action_labels)):
+#             text = ax.text(j, i, int(q.Q_table[i, j] * 100), ha="center", va="center", color="black")
+
+#     ax.set_title("Q-table")
+#     fig.tight_layout()
+#     plt.show()
 def plot_heatMap(q):
     state_labels = ["START_AREA", "GOAL_AREA", "WINNING_AREA", "DANGER_AREA", "SAFE_AREA", "DEFAULT_AREA"]
     action_labels = ["STARTING_ACTION", "DEFAULT_ACTION", "INSIDE_GOAL_AREA_ACTION", "ENTER_GOAL_AREA_ACTION", "ENTER_WINNING_AREA_ACTION", "STAR_ACTION", "MOVE_INSIDE_SAFETY_ACTION", "MOVE_OUTSIDE_SAFETY_ACTION", "KILL_PLAYER_ACTION", "DIE_ACTION", "NO_ACTION"]
 
     fig, ax = plt.subplots()
-    im = ax.imshow(q.Q_table, cmap='coolwarm')
+    im = ax.imshow(q.Q_table, cmap='viridis')
 
     ax.set_xticks(np.arange(len(action_labels)))
     ax.set_yticks(np.arange(len(state_labels)))
@@ -35,18 +54,22 @@ def plot_heatMap(q):
 
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
 
+    cbar = ax.figure.colorbar(im, ax=ax) # Add colorbar to show color scale
+    cbar.ax.set_ylabel("Q-values", rotation=-90, va="bottom") # Add label to colorbar
+
     for i in range(len(state_labels)):
         for j in range(len(action_labels)):
-            text = ax.text(j, i, int(q.Q_table[i, j] * 100), ha="center", va="center", color="black")
+            text = ax.text(j, i, int(q.Q_table[i, j] * 100), ha="center", va="center", color="w")
 
     ax.set_title("Q-table")
     fig.tight_layout()
+    plt.savefig('/Users/reventlov/Documents/Robcand/2. Semester/TAI/Exam/Ludo-Q-learning-project/src/images/heatmap.svg', format='svg', dpi=1200)
     plt.show()
 
 
 def playGame(q, q_player, training=True, current_game=0, after=0):
-    g = ludopy.Game(ghost_players=[2, 3]) # two players
-    #g = ludopy.Game(ghost_players=[])       # four players
+    #g = ludopy.Game(ghost_players=[2, 3]) # two players
+    g = ludopy.Game(ghost_players=[])       # four players
     stop_while = False
     if training:
         global training_started
@@ -100,9 +123,14 @@ def training(q, number_of_runs_for_training, q_player, after=0):
         #     average_train_win_rates.append(average_win_rate)
         
         ####################### Set for induvidual test: 50 games a 100 episodes #######################
-        if (i+1) % 50 == 0:
-            average_win_rate = sum(win_rate_list[-50:]) / 50
+        # if (i+1) % 50 == 0:
+        #     average_win_rate = sum(win_rate_list[-50:]) / 50
+        #     average_train_win_rates.append(average_win_rate)
+        
+        if (i+1) % 10 == 0:
+            average_win_rate = sum(win_rate_list[-10:]) / 10
             average_train_win_rates.append(average_win_rate)
+        
         
         if runMultipleParameters == False:
             progress = int(((i + 1) / number_of_runs_for_training) * 30)
@@ -149,7 +177,7 @@ def run():
     ####################### BEST #######################
     learning_rate = [0.325] 
     discount_factor = [0.175] 
-    boltzmann_temperature = [0.125] 
+    boltzmann_temperature = [0.175] # 0.125 was the best with 4 players 
     
     ####################### BEST for tuning #######################
     # learning_rate = [0.275, 0.300, 0.325, 0.350, 0.375]
@@ -168,10 +196,16 @@ def run():
     # q_player = 0
     
     ####################### Parameters for induvidial test #######################
+    # after = 1
+    # number_of_runs_for_training = 5000
+    # number_of_runs_for_validation = 1
+    # q_player = 0
+    
     after = 1
-    number_of_runs_for_training = 5000
+    number_of_runs_for_training = 1000
     number_of_runs_for_validation = 1
     q_player = 0
+    
     
     total_iterations = len(boltzmann_temperature) * len(discount_factor) * len(learning_rate) * (number_of_runs_for_training + number_of_runs_for_validation)
     current_iteration = 0

@@ -226,9 +226,9 @@ class QLearn:
         # # Reward logic based on there is a winner
         # if there_is_a_winner:
         #     if there_is_a_winner == self.player_index:
-        #         reward += 1.0 
+        #         reward += 0.3 
         #     else:
-        #         reward -= 1.0
+        #         reward -= 0.3
         
         return reward
 
